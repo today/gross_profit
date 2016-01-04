@@ -6,18 +6,35 @@
   
   <link rel="stylesheet" href="css/app.css">
   <style type="text/css">
-    
+
   </style>
   
   <script type="text/javascript" src="js/vue.js"></script>
   
 </head>
-<body ng-app="inputApp" ng-controller="Ctrl" >
+<body>
   <p>陕西终端公司毛利分析</p>
+  <div id="app">
+    {{ message }} Current Step:{{step}}
+    <br/>
+    <button :disabled="step<100"  >第一步：检查环境</button>
+    <br/>
+    <button :disabled="step<200"  >第二步：检查输入文件是否齐备</button>
+    <br/>
+    <button :disabled="step<300"  >第三步：检查输入文件内容是否合规</button>
+    <br/>
+    <input type="number" v-model:value="step">
 
-<script type="text/javascript">
-    
-</script>
+  </div>
+  <script type="text/javascript">
+    var vm = new Vue({
+      el: '#app',
+      data: {
+        message: 'Hello Vue.js!',
+        step:1
+      }
+    });
+  </script>
 </body>
 </html>
 
