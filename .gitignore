@@ -27,3 +27,5 @@ build/Release
 node_modules
 
 nwjs.app/
+
+js/vue.js
