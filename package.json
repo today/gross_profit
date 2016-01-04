@@ -7,7 +7,7 @@
 
   "window": {
   	"title": "毛利分析",
-  	"icon": "icon.png",
+  	"icon": "favicon.ico",
     "toolbar": true,
     "frame": true,
     "fullscreen": false,
