@@ -1,12 +1,31 @@
 /* app css stylesheet */
 
 body {
-  padding-top: 10px;padding-left:10px; padding-right:10px; 
+  padding-top: 0em;padding-left:1em; padding-right:0em; 
+}
+
+p {
+	font-size: 2em;
+}
+
+button {
+	font-size: 1em;
 }
 
 
+#msg_area{
+	float: left;
+	width: 30em;
+}
 
+#cmd_area{
+	float: left;
+}
 
+.err_msg{
+	font-size: 1.2em;
+	color: red;
+}
 
 
 
