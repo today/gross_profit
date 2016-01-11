@@ -29,3 +29,5 @@ node_modules
 nwjs.app/
 
 js/vue.js
+
+*.xlsx
