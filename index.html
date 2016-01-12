@@ -10,12 +10,13 @@
   </style>
   
   <script type="text/javascript" src="js/vue.js"></script>
+  <script type="text/javascript" src="js/lib.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
 
 </head>
-<body>
+<body id="app">
   <p>陕西终端公司毛利分析</p>
-  <div id="app">
+  <div >
     
     <div id="msg_area">
         <div v-for="a_msg in run_msg">
@@ -31,31 +32,41 @@
       <div v-for="a_step in step_array">
         <span v-if="step>=a_step.idx">
         {{a_step.desc}} 
-        <button :disabled="step!==a_step.idx" @click="a_step.func" > 运行 </button><br/><br/>
+        <button :disabled="!(step==a_step.idx)" @click="a_step.func" > 运行 </button><br/><br/>
         </span>
       </div>
     </div>
-   
-    
 
   </div>
+
+  <div id="debug_area">
+    step:<input  type="number" v-model="step"  name="btn_1" />
+    {{step}}
+  </div>
+
+
+
 <script type="text/javascript">
 
 var fs = require('fs');
 var _ = require('underscore');
 var xlsx = require("node-xlsx");
 
+var MSG = Msg.createNew();
+var ERR_MSG = Msg.createNew();
+
 var ORDER_DETAIL = null;
+
 
 var vm = new Vue({
   el: '#app',
   data: {
     run_flag: true,
     message: 'Hello Vue.js!',
-    step:104,
+    step:101,
     step_array:[],
-    run_msg:["系统启动。"],
-    err_msg:[]
+    run_msg: MSG.msg_list,
+    err_msg: ERR_MSG.msg_list
   },
   methods: {
     getPwd: function () {

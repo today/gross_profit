@@ -6,13 +6,15 @@
 
 var init_100 = function(){
   console.log("check_evn_100");
+  MSG.put("系统启动。");
+
   setInterval(function() {
     
     var max_count = 5;
     var count = vm.run_msg.length;
     if( count > max_count ){
       console.log(count-max_count);
-      vm.run_msg = _.rest(vm.run_msg);
+      //vm.run_msg = _.rest(vm.run_msg);
     }
   }, 3000);
 }
@@ -36,7 +38,7 @@ var check_status_102 = function(){
 
   // 程序运行所必须的数据源
   var srcFilelist = [];
-  srcFilelist.push("11月销售订单明细.XLSX");
+  srcFilelist.push("11月销售订单明细(全).XLSX");
   srcFilelist.push("基础价格表.XLSX");
   srcFilelist.push("价格变动表.XLSX");
   srcFilelist.push("价保返利明细表.XLSX");
@@ -48,10 +50,10 @@ var check_status_102 = function(){
   for( var i=0;i<srcFilelist.length;i++ ){
     var filename = srcFilelist[i];
     if(fs.existsSync("data/" + filename)){
-      put_msg( "必要文件：" + filename + " 存在，程序可以继续工作。");
+      MSG.put( "必要文件：" + filename + " 存在，程序可以继续工作。");
       run_flag = true;
     }else{
-      put_err_msg( "必要文件： " + filename + " 不存在，程序无法继续工作。");
+      ERR_MSG.put( "必要文件： " + filename + " 不存在，程序无法继续工作。");
       run_flag = false;
       break;
     }
