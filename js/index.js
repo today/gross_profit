@@ -58,7 +58,6 @@ var check_status_102 = function(){
       break;
     }
   }
-  console.log(vm.run_msg);
 
   if( run_flag ){
     vm.step = 103;
@@ -95,63 +94,66 @@ var load_order_detail_104 = function(){
   return "";
 };
 
+
+/* 
+毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
+*/
 var copy_order_detail_105 = function(){
   console.log("copy_order_detail");
 
-  
-  var must_col_idx = [];
   var must_col_title = [];
+  must_col_title.push(make_title("实际交货数量"));
+  must_col_title.push(make_title("交货完成状态"));
+  must_col_title.push(make_title("销售价格"));
+  must_col_title.push(make_title("销售金额"));
+  must_col_title.push(make_title("订单类型"));
+  must_col_title.push(make_title("渠道"));
+  must_col_title.push(make_title("客户"));
+  must_col_title.push(make_title("客户名称"));
+  must_col_title.push(make_title("销售数量"));
+  must_col_title.push(make_title("物料号"));
+  must_col_title.push(make_title("物料组"));
+  must_col_title.push(make_title("物料组描述"));
+  must_col_title.push(make_title("实际交货日期"));
+  must_col_title.push(make_title("城市"));
+  must_col_title.push(make_title("客户参考号"));
+  must_col_title.push(make_title("创建日期"));
 
-  must_col_idx.push(0);
-  must_col_title.push("实际交货数量");
-  must_col_idx.push(2);
-  must_col_title.push("交货完成状态");
-  must_col_idx.push(3);
-  must_col_title.push("销售价格");
-  must_col_idx.push(4);
-  must_col_title.push("销售金额");
-  must_col_idx.push(5);
-  must_col_title.push("订单类型");
-  must_col_idx.push(6);
-  must_col_title.push("渠道");
+  // 以下数据，要从其他文件中获得
+  must_col_title.push(make_title("成本单价"));
+  must_col_title.push(make_title("下游价返"));
+  must_col_title.push(make_title("促销费"));
 
-  must_col_idx.push(8);
-  must_col_title.push("客户");
-  must_col_idx.push(9);
-  must_col_title.push("客户名称");
+  // 根据title，查询出 index。
+  var title_array = ORDER_DETAIL[0];
+  for(var i=0; i<title_array.length; i++ ){
+    for(var j=0; j<must_col_title.length; j++){
+      t1 = title_array[i];
+      obj_title = must_col_title[j];
+      t2 = obj_title.title;
+      if( t1 == t2 ){
+        obj_title.index = i;
+      }
+    }
+  }
 
-  must_col_idx.push(12);
-  must_col_title.push("销售数量");
+  // 
+  var must_col_idx = _.pluck(must_col_title, 'index');;
+  console.log(must_col_idx);
 
-  must_col_idx.push(30);
-  must_col_title.push("物料号");
-  must_col_idx.push(31);
-  must_col_title.push("物料组");
-  must_col_idx.push(32);
-  must_col_title.push("物料组描述");
 
-  must_col_idx.push(47);
-  must_col_title.push("实际交货日期");
-  must_col_idx.push(48);
-  must_col_title.push("城市");
-
-  must_col_idx.push(54);
-  must_col_title.push("客户参考号");
-
-  must_col_idx.push(64);
-  must_col_title.push("创建日期");
-
+  var must_col_content = [];
 
   var must_col_sheet = [];
   for( var i=0; i < ORDER_DETAIL.length; i++ ){
     must_col_content = pick_from_array(must_col_idx, ORDER_DETAIL[i]);
     must_col_sheet.push(must_col_content);
     // console.log(must_col_content);
-    console.log(i);
+    //console.log(i);
   }
 
-  var buffer = xlsx.build([{name: "销售订单明细", data: must_col_sheet}]);
-  fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
+  //var buffer = xlsx.build([{name: "销售订单明细", data: must_col_sheet}]);
+  //fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
 
   // 开发时使用的工具代码
   // var title = ORDER_DETAIL[0];
@@ -169,7 +171,30 @@ var pick_from_array = function(index_array, src_array){
   var dest_array = [];
   for(var i=0; i<index_array.length; i++){
     var idx = index_array[i];
-    dest_array.push(src_array[idx]);
+    if( idx>=0 ){
+      dest_array.push(src_array[idx]);
+    } 
   }
   return dest_array;
 }
+
+var make_title = function( s_title ){
+  var obj_title = {};
+  obj_title.index = -1;
+  obj_title.title = s_title;
+  
+  return obj_title;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
