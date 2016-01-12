@@ -49,21 +49,15 @@
 
 <script type="text/javascript">
 
-var fs = require('fs');
-var _ = require('underscore');
-var xlsx = require("node-xlsx");
 
 var MSG = Msg.createNew();
-var ERR_MSG = Msg.createNew();
-
-var ORDER_DETAIL = null;
-
+var ERR_MSG = Msg.createNew(); 
 
 var vm = new Vue({
   el: '#app',
   data: {
     run_flag: true,
-    step:101,
+    step:110,
     step_array:[],
     run_msg: MSG.msg_list,
     err_msg: ERR_MSG.msg_list
@@ -83,11 +77,15 @@ var make_step = function( i_index, s_desc, f_func_name ){
   return obj_step;
 };
 
-vm.step_array.push( make_step( 101, "第一步：检查环境。", check_evn_101 ) );
-vm.step_array.push( make_step( 102, "第二步：检查状态。", check_status_102 ) );
-vm.step_array.push( make_step( 103, "第三步：检查输入文件是否齐备。", check_src_103 ) );
-vm.step_array.push( make_step( 104, "第四步：读入销售订单明细，并检查内容。", load_order_detail_104 ) );
-vm.step_array.push( make_step( 105, "第五步：拷贝必要的数据列到临时文件。", copy_order_detail_105 ) );
+vm.step_array.push( make_step( 110, "第一步：检查环境。", check_env_110 ) );
+vm.step_array.push( make_step( 120, "第二步：检查状态。", check_status_120 ) );
+vm.step_array.push( make_step( 130, "第三步：检查输入文件是否齐备。", check_src_130 ) );
+vm.step_array.push( make_step( 140, "第四步：读入销售订单明细，并检查内容。", load_order_detail_140 ) );
+vm.step_array.push( make_step( 150, "第五步：筛选数据到工作文件。", copy_order_detail_150 ) );
+vm.step_array.push( make_step( 160, "第六步：补充数据到工作文件。", fill_field_160 ) );
+vm.step_array.push( make_step( 170, "第七步：计算订单毛利。", calc_gross_170 ) );
+vm.step_array.push( make_step( 180, "第八步：加总物料毛利。", calc_prod_180 ) );
+vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc_group_190 ) );
 
 init_100();
 

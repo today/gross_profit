@@ -4,6 +4,15 @@
  * Released under the GPL License.
  */
 
+var fs = require('fs');
+var _ = require('underscore');
+var xlsx = require("node-xlsx");
+
+
+
+var ORDER_DETAIL = null;
+var must_col_title = [];
+
 var init_100 = function(){
   console.log("check_evn_100");
   MSG.put("系统启动。");
@@ -19,7 +28,7 @@ var init_100 = function(){
   }, 3000);
 }
 
-var check_evn_101 = function(){
+var check_env_110 = function(){
   console.log("check_evn_101");
 
   // 程序运行所必须的库和配置文件
@@ -28,11 +37,11 @@ var check_evn_101 = function(){
   envlist.push("node_modules/node-xlsx/");
   envlist.push("node_modules/underscore/underscore-min.js");
 
-  vm.step = 102;
+  vm.step = 120;
   return "";
 };
 
-var check_status_102 = function(){
+var check_status_120 = function(){
   console.log("check_status");
   var run_flag = true;
 
@@ -60,21 +69,21 @@ var check_status_102 = function(){
   }
 
   if( run_flag ){
-    vm.step = 103;
+    vm.step = 130;
   }else{
-    vm.step = 101;
+    vm.step = 110;
   }
 
   return "";
 };
 
-var check_src_103 = function(){
+var check_src_130 = function(){
   console.log("check_src");
-  vm.step = 104;
+  vm.step = 140;
   return "";
 };
 
-var load_order_detail_104 = function(){
+var load_order_detail_140 = function(){
   console.log("load_order_detail");
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   vm.step = 104.5;
@@ -88,7 +97,7 @@ var load_order_detail_104 = function(){
     ORDER_DETAIL = obj[0].data;   // 
     //console.log(obj[0].name);
     MSG.put( "销售订单明细数据读入成功。");
-    vm.step = 105;
+    vm.step = 150;
   }, 100);
   
 
@@ -100,10 +109,10 @@ var load_order_detail_104 = function(){
 /* 
 毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
 */
-var copy_order_detail_105 = function(){
+var copy_order_detail_150 = function(){
   console.log("copy_order_detail");
 
-  var must_col_title = [];
+  
   must_col_title.push(make_title("实际交货数量"));
   must_col_title.push(make_title("交货完成状态"));
   must_col_title.push(make_title("销售价格"));
@@ -173,9 +182,40 @@ var copy_order_detail_105 = function(){
   // }
 
 
-  vm.step = 106;
+  vm.step = 160;
   return "";
 };
+
+// 第六步：补充数据到工作文件。
+var fill_field_160 = function(){
+  ORDER_DETAIL
+  for(var i=1; i<ORDER_DETAIL.length; i++){
+    var a_order = ORDER_DETAIL[i];
+    var index = find_title_index("物料号")
+    var prod_id = a_order[index];
+    console.log(prod_id);
+  }
+  vm.step = 170;
+};
+
+// 第七步：计算订单毛利。
+var calc_gross_170 = function(){
+
+  vm.step = 180;
+};
+
+// 第六步：加总物料毛利。
+var calc_prod_180 = function(){
+
+  vm.step = 190;
+};
+
+// 第六步：加总物料组毛利。
+var calc_group_190 = function(){
+
+  vm.step = 200;
+};
+
 
 var pick_from_array = function(index_array, src_array){
 
@@ -201,6 +241,11 @@ var make_title = function( s_title ){
   obj_title.title = s_title;
   
   return obj_title;
+};
+
+var find_title_index = function(t_name){
+  var a_title = _.findWhere( must_col_title, {title:t_name} );
+  return a_title.index;
 };
 
 
