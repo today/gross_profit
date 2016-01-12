@@ -10,7 +10,7 @@ var init_100 = function(){
 
   setInterval(function() {
     
-    var max_count = 5;
+    var max_count = 15;
     var count = vm.run_msg.length;
     if( count > max_count ){
       console.log(count-max_count);
@@ -76,16 +76,18 @@ var check_src_103 = function(){
 
 var load_order_detail_104 = function(){
   console.log("load_order_detail");
-  put_msg( "数据较多，载入约需15秒。请耐心等待。");
+  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   vm.step = 104.5;
 
   var obj = null;
   setTimeout(function() {
-    obj = xlsx.parse('data/11月销售订单明细(全).xlsx'); // 读入xlsx文件
+    obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
+    //obj = xlsx.parse('data/11月销售订单明细(全).xlsx'); // 读入xlsx文件
+
     // head = obj[0].data[0];
     ORDER_DETAIL = obj[0].data;   // 
     //console.log(obj[0].name);
-    put_msg( "销售订单明细数据读入成功。");
+    MSG.put( "销售订单明细数据读入成功。");
     vm.step = 105;
   }, 100);
   
@@ -118,14 +120,23 @@ var copy_order_detail_105 = function(){
   must_col_title.push(make_title("城市"));
   must_col_title.push(make_title("客户参考号"));
   must_col_title.push(make_title("创建日期"));
-
   // 以下数据，要从其他文件中获得
   must_col_title.push(make_title("成本单价"));
   must_col_title.push(make_title("下游价返"));
   must_col_title.push(make_title("促销费"));
+  must_col_title.push(make_title("利润"));
+  must_col_title.push(make_title("利润率"));
+
+  
+  var title_array = ORDER_DETAIL[0];
+  // 把附加字段添加到 title 行中。
+  title_array.push("成本单价");
+  title_array.push("下游价返");
+  title_array.push("促销费");
+  title_array.push("利润");
+  title_array.push("利润率");
 
   // 根据title，查询出 index。
-  var title_array = ORDER_DETAIL[0];
   for(var i=0; i<title_array.length; i++ ){
     for(var j=0; j<must_col_title.length; j++){
       t1 = title_array[i];
@@ -137,8 +148,8 @@ var copy_order_detail_105 = function(){
     }
   }
 
-  // 
-  var must_col_idx = _.pluck(must_col_title, 'index');;
+  // 获取所有的 index 值。
+  var must_col_idx = _.pluck(must_col_title, 'index');
   console.log(must_col_idx);
 
 
@@ -152,8 +163,8 @@ var copy_order_detail_105 = function(){
     //console.log(i);
   }
 
-  //var buffer = xlsx.build([{name: "销售订单明细", data: must_col_sheet}]);
-  //fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
+  var buffer = xlsx.build([{name: "销售订单明细", data: must_col_sheet}]);
+  fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
 
   // 开发时使用的工具代码
   // var title = ORDER_DETAIL[0];
@@ -171,9 +182,15 @@ var pick_from_array = function(index_array, src_array){
   var dest_array = [];
   for(var i=0; i<index_array.length; i++){
     var idx = index_array[i];
-    if( idx>=0 ){
+    if( idx===-1 ){
+      dest_array.push("");
+    }
+    else if( idx>=0 ){
       dest_array.push(src_array[idx]);
-    } 
+    }
+    else{
+      dest_array.push("n/a");
+    }
   }
   return dest_array;
 }
