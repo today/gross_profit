@@ -39,9 +39,10 @@
 
   </div>
 
-  <div id="debug_area">
+  <div id="debug_area"><h2>Debug Area</h2>
     step:<input  type="number" v-model="step"  name="btn_1" />
     {{step}}
+    <br><br><br>
   </div>
 
 
@@ -81,16 +82,6 @@ var make_step = function( i_index, s_desc, f_func_name ){
   obj_step.func = f_func_name;
   return obj_step;
 };
-
-var put_msg = function( msg ){
-  vm.run_msg.push( msg );
-}
-
-var put_err_msg = function( msg ){
-  vm.err_msg.push( msg );
-}
-
-
 
 vm.step_array.push( make_step( 101, "第一步：检查环境。", check_evn_101 ) );
 vm.step_array.push( make_step( 102, "第二步：检查状态。", check_status_102 ) );
