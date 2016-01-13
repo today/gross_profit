@@ -17,3 +17,21 @@ var Msg = {
     return msg;
   }
 };
+
+
+
+function isblank(strA){
+  if(strA){
+    if( "string" === typeof(strA) ){
+      if( "" === strA.trim()){
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      return false;
+    }
+  }else{
+    return true;
+  }
+}

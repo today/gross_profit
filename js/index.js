@@ -83,12 +83,12 @@ var check_src_130 = function(){
 var load_order_detail_140 = function(){
   console.log("load_order_detail_140");
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
-  vm.step = 104.5;
+  vm.step = 140.5;
 
   var obj = null;
   setTimeout(function() {
-    obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
-    //obj = xlsx.parse('data/11月销售订单明细(全).xlsx'); // 读入xlsx文件
+    obj = xlsx.parse('data//201511/11月销售订单明细.xlsx'); // 读入xlsx文件
+    //  obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
 
     // head = obj[0].data[0];
     ORDER_DETAIL = obj[0].data;   // 
@@ -161,16 +161,20 @@ var copy_order_detail_150 = function(){
   console.log(must_col_idx);
   console.log(must_col_title);
 
-  var must_col_content = [];
+  var must_col_content = null;
   var ORDER_DETAIL_SMALL = [];
   for( var i=0; i < ORDER_DETAIL.length; i++ ){
-    must_col_content = pick_from_array(must_col_idx, ORDER_DETAIL[i]);
-    ORDER_DETAIL_SMALL.push(must_col_content);
-    must_col_content = null;
+    var one_order = ORDER_DETAIL[i];
+    if( !isblank(one_order[0]) ){
+      must_col_content = pick_from_array(must_col_idx, ORDER_DETAIL[i]);
+      ORDER_DETAIL_SMALL.push(must_col_content);
+      must_col_content = null;
+    }
+    
     // console.log(must_col_content);
     //console.log(i);
   }
-  console.log(ORDER_DETAIL_SMALL);
+  //console.log(ORDER_DETAIL_SMALL);
 
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
   fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
@@ -182,32 +186,45 @@ var copy_order_detail_150 = function(){
 // 第六步：补充数据到工作文件。
 var fill_field_160 = function(){
   // 装入  [销售订单明细精简版.xlsx]
-  var order_info = xlsx.parse('data/销售订单明细精简版.xlsx'); 
+  var obj_sheet = xlsx.parse('data/销售订单明细精简版.xlsx');
+  var order_info =  obj_sheet[0].data;
   MSG.put( " 销售订单明细精简版.XLSX  数据读入成功。");
+  
   // 装入  [物料清单.XLSX]
-  var prod_info = xlsx.parse('data/201511/物料清单.xlsx'); 
+  var obj_sheet2 = xlsx.parse('data/201511/物料清单.xlsx'); 
+  var prod_info = obj_sheet2[0].data;
   MSG.put( " 物料清单.XLSX  数据读入成功。");
+  // 物料清单中编码为 1001000202013110  16位   
+  //   销售订单中  001001000202013110  18位
+  // 需清洗数据。   
 
   var title_array = order_info[0];
   var index_prod_id = find_title_index(title_array, "物料号");
   var index_order_date = find_title_index(title_array, "创建日期");
   var index_cost = find_title_index(title_array, "成本单价");
+
   // 因为要跳过title，所以下标从 1 开始。
   for(var i=1; i<order_info.length; i++){
     var a_order = order_info[i];
-    console.log(a_order);
-    console.log(index_prod_id);
-    console.log(index_order_date);
+    //console.log(i);
     
     var prod_id_in_order = a_order[index_prod_id];
     var date_in_order = a_order[index_order_date];
+    //console.log(prod_id_in_order);
+    //console.log(date_in_order);
 
-    // 查「物料清单」表，取得价格
+    // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
+    //console.log(cost);
     // 成本 填入表格中。
     a_order[index_cost] = cost;
 
+    //if( i>100 ) {break;}
+
   }
+
+  var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
+  fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
 
   vm.step = 170;
 };
@@ -263,21 +280,43 @@ var find_title_index = function( title_array, t_name){
 };
 
 var getCost = function(prod_info, id, order_date){
-  console.log(id);
-  console.log(order_date);
 
-  var prod = _.find(prod_info, function(a_prod){ 
-    console.log(a_prod[0]);
-    return a_prod[0] === id; 
-  });
-  //console.log(prod);
+  console.log(id);
+    
+
+  var a_index = -1;
+  var prod_id = null;
+  var id_a = id.trim();
+
+  for(var i=2; i<prod_info.length; i++){
+
+    prod_id = prod_info[i][0];
+    if(_.isNumber(prod_id)){
+      prod_id = ""+prod_id;
+    }
+
+    if( isblank(prod_id) ){
+      a_index = -1
+    }else{
+      var id_b = "00" + prod_id.trim();   //  todo 临时解决编码长度不一致的问题。
+
+      if( id_a == id_b ){
+        a_index = i;
+        
+        break;
+      }
+    }
+  }
+
   var cost = "";
-  if( prod === undefined ){
+  if( a_index < 0 ){
+    console.log("Warning: index is -1.");
     cost = "";
   }else{
-    cost = prod[8];
+    cost = prod_info[i][8];
+    console.log("-----------------" + cost);
   }
-  console.log(cost);
+  //console.log(cost);
   return cost;
 };
 
