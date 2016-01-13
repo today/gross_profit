@@ -42,7 +42,9 @@
   <div id="debug_area"><h2>Debug Area</h2>
     step:<input  type="number" v-model="step"  name="btn_1" />
     {{step}}
-    <br><br><br>
+    <br><br>
+    <button  @click="set140" > 140 </button><br/><br/>
+    <br>
   </div>
 
 
@@ -65,7 +67,8 @@ var vm = new Vue({
   methods: {
     getPwd: function () {
       console.log("This is test function.");
-    }
+    },
+    set140: function(){vm.step=140;}
   }
 });
 

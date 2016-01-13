@@ -8,10 +8,8 @@ var fs = require('fs');
 var _ = require('underscore');
 var xlsx = require("node-xlsx");
 
-
-
 var ORDER_DETAIL = null;
-var must_col_title = [];
+
 
 var init_100 = function(){
   console.log("check_evn_100");
@@ -47,18 +45,17 @@ var check_status_120 = function(){
 
   // 程序运行所必须的数据源
   var srcFilelist = [];
-  srcFilelist.push("11月销售订单明细(全).XLSX");
-  srcFilelist.push("基础价格表.XLSX");
-  srcFilelist.push("价格变动表.XLSX");
-  srcFilelist.push("价保返利明细表.XLSX");
-  srcFilelist.push("客户地市对应表.XLSX");
-  srcFilelist.push("渠道经理对应表.XLSX");
-  srcFilelist.push("产品经理对应表.XLSX");
+  srcFilelist.push("data/201511/11月销售订单明细.XLSX");
+  srcFilelist.push("data/201511/物料清单.XLSX");
+  srcFilelist.push("data/201511/SCM客户明细.XLSX");
+  srcFilelist.push("data/201511/2015.11月计提并使用返利.XLSX");
+  srcFilelist.push("data/201511/2015.12促销品领用出库明细.XLSX");
+  
   //srcFilelist.push("abc.XLSX");
 
   for( var i=0;i<srcFilelist.length;i++ ){
     var filename = srcFilelist[i];
-    if(fs.existsSync("data/" + filename)){
+    if(fs.existsSync("" + filename)){
       MSG.put( "必要文件：" + filename + " 存在，程序可以继续工作。");
       run_flag = true;
     }else{
@@ -84,7 +81,7 @@ var check_src_130 = function(){
 };
 
 var load_order_detail_140 = function(){
-  console.log("load_order_detail");
+  console.log("load_order_detail_140");
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   vm.step = 104.5;
 
@@ -110,12 +107,12 @@ var load_order_detail_140 = function(){
 毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
 */
 var copy_order_detail_150 = function(){
-  console.log("copy_order_detail");
-
+  console.log("copy_order_detail_150");
   
+  var must_col_title = [];
   must_col_title.push(make_title("实际交货数量"));
+  must_col_title.push(make_title("物料描述"));
   must_col_title.push(make_title("交货完成状态"));
-  must_col_title.push(make_title("销售价格"));
   must_col_title.push(make_title("销售金额"));
   must_col_title.push(make_title("订单类型"));
   must_col_title.push(make_title("渠道"));
@@ -131,8 +128,8 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("创建日期"));
   // 以下数据，要从其他文件中获得
   must_col_title.push(make_title("成本单价"));
-  must_col_title.push(make_title("下游价返"));
-  must_col_title.push(make_title("促销费"));
+  //must_col_title.push(make_title("下游价返"));
+  //must_col_title.push(make_title("促销费"));
   must_col_title.push(make_title("利润"));
   must_col_title.push(make_title("利润率"));
 
@@ -140,8 +137,8 @@ var copy_order_detail_150 = function(){
   var title_array = ORDER_DETAIL[0];
   // 把附加字段添加到 title 行中。
   title_array.push("成本单价");
-  title_array.push("下游价返");
-  title_array.push("促销费");
+  //title_array.push("下游价返");
+  //title_array.push("促销费");
   title_array.push("利润");
   title_array.push("利润率");
 
@@ -156,31 +153,27 @@ var copy_order_detail_150 = function(){
       }
     }
   }
+  console.log(must_col_title);
 
   // 获取所有的 index 值。
   var must_col_idx = _.pluck(must_col_title, 'index');
+  var must_col_title = _.pluck(must_col_title, 'title');
   console.log(must_col_idx);
-
+  console.log(must_col_title);
 
   var must_col_content = [];
-
-  var must_col_sheet = [];
+  var ORDER_DETAIL_SMALL = [];
   for( var i=0; i < ORDER_DETAIL.length; i++ ){
     must_col_content = pick_from_array(must_col_idx, ORDER_DETAIL[i]);
-    must_col_sheet.push(must_col_content);
+    ORDER_DETAIL_SMALL.push(must_col_content);
+    must_col_content = null;
     // console.log(must_col_content);
     //console.log(i);
   }
+  console.log(ORDER_DETAIL_SMALL);
 
-  var buffer = xlsx.build([{name: "销售订单明细", data: must_col_sheet}]);
+  var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
   fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
-
-  // 开发时使用的工具代码
-  // var title = ORDER_DETAIL[0];
-  // for( var i=0; i < title.length; i++ ){
-  //   console.log("" + i + ":" + title[i]);
-  // }
-
 
   vm.step = 160;
   return "";
@@ -188,13 +181,34 @@ var copy_order_detail_150 = function(){
 
 // 第六步：补充数据到工作文件。
 var fill_field_160 = function(){
-  ORDER_DETAIL
-  for(var i=1; i<ORDER_DETAIL.length; i++){
-    var a_order = ORDER_DETAIL[i];
-    var index = find_title_index("物料号")
-    var prod_id = a_order[index];
-    console.log(prod_id);
+  // 装入  [销售订单明细精简版.xlsx]
+  var order_info = xlsx.parse('data/销售订单明细精简版.xlsx'); 
+  MSG.put( " 销售订单明细精简版.XLSX  数据读入成功。");
+  // 装入  [物料清单.XLSX]
+  var prod_info = xlsx.parse('data/201511/物料清单.xlsx'); 
+  MSG.put( " 物料清单.XLSX  数据读入成功。");
+
+  var title_array = order_info[0];
+  var index_prod_id = find_title_index(title_array, "物料号");
+  var index_order_date = find_title_index(title_array, "创建日期");
+  var index_cost = find_title_index(title_array, "成本单价");
+  // 因为要跳过title，所以下标从 1 开始。
+  for(var i=1; i<order_info.length; i++){
+    var a_order = order_info[i];
+    console.log(a_order);
+    console.log(index_prod_id);
+    console.log(index_order_date);
+    
+    var prod_id_in_order = a_order[index_prod_id];
+    var date_in_order = a_order[index_order_date];
+
+    // 查「物料清单」表，取得价格
+    var cost = getCost(prod_info, prod_id_in_order, date_in_order);
+    // 成本 填入表格中。
+    a_order[index_cost] = cost;
+
   }
+
   vm.step = 170;
 };
 
@@ -233,7 +247,7 @@ var pick_from_array = function(index_array, src_array){
     }
   }
   return dest_array;
-}
+};
 
 var make_title = function( s_title ){
   var obj_title = {};
@@ -243,9 +257,33 @@ var make_title = function( s_title ){
   return obj_title;
 };
 
-var find_title_index = function(t_name){
-  var a_title = _.findWhere( must_col_title, {title:t_name} );
-  return a_title.index;
+var find_title_index = function( title_array, t_name){
+  var a_index = _.indexOf( title_array, t_name );
+  return a_index;
+};
+
+var getCost = function(prod_info, id, order_date){
+  console.log(id);
+  console.log(order_date);
+
+  var prod = _.find(prod_info, function(a_prod){ 
+    console.log(a_prod[0]);
+    return a_prod[0] === id; 
+  });
+  //console.log(prod);
+  var cost = "";
+  if( prod === undefined ){
+    cost = "";
+  }else{
+    cost = prod[8];
+  }
+  console.log(cost);
+  return cost;
+};
+
+var find_prod = function(id){
+  var prod = null;
+  return prod;
 };
 
 
