@@ -31,3 +31,5 @@ nwjs.app/
 js/vue.js
 
 *.xlsx
+
+data/
