@@ -39,11 +39,13 @@
 
   </div>
 
-  <div id="debug_area"><h2>Debug Area</h2>
-    step:<input  type="number" v-model="step"  name="btn_1" />
+  <div id="debug_area"><h3>Debug Area</h3>
+    step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
-    <button  @click="set140" > 140 </button><br/><br/>
+    <button  @click="set140" > 140 </button><br/>
+    <button  onClick="loadfile()" > loadfile </button><br/>
+    <br/>
     <br>
   </div>
 
@@ -93,6 +95,18 @@ vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc
 init_100();
 
 console.log(vm.step_array);
+
+var loadfile = function(){
+  console.log( " 销售订单明细精简版.XLSX  开始读入。");
+  var order_info = xlsx.parse('data/销售订单明细精简版.xlsx'); 
+  console.log( " 销售订单明细精简版.XLSX  数据读入成功。");
+
+  console.log( " 物料清单.XLSX  开始读入。");
+  var prod_info = xlsx.parse("data/201511/物料清单.xlsx"); 
+  console.log( " 物料清单.XLSX  数据读入成功。");
+}
+
+
 </script>
 </body>
 </html>
