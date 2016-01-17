@@ -9,6 +9,7 @@ var _ = require('underscore');
 var xlsx = require("node-xlsx");
 
 var ORDER_DETAIL = null;
+var TAX_RATE = 1.17 ;
 
 
 var init_100 = function(){
@@ -83,7 +84,7 @@ var check_src_130 = function(){
 var load_order_detail_140 = function(){
   console.log("load_order_detail_140");
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
-  vm.step = 140.5;
+  vm.step = 141;
 
   var obj = null;
   setTimeout(function() {
@@ -103,11 +104,12 @@ var load_order_detail_140 = function(){
 };
 
 
-/* 
-毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
-*/
+
 var copy_order_detail_150 = function(){
   console.log("copy_order_detail_150");
+  vm.step = 151;
+  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
+  
   
   var must_col_title = [];
   must_col_title.push(make_title("实际交货数量"));
@@ -130,8 +132,8 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("成本单价"));
   //must_col_title.push(make_title("下游价返"));
   //must_col_title.push(make_title("促销费"));
-  must_col_title.push(make_title("利润"));
-  must_col_title.push(make_title("利润率"));
+  must_col_title.push(make_title("毛利"));
+  must_col_title.push(make_title("毛利率"));
 
   
   var title_array = ORDER_DETAIL[0];
@@ -139,8 +141,8 @@ var copy_order_detail_150 = function(){
   title_array.push("成本单价");
   //title_array.push("下游价返");
   //title_array.push("促销费");
-  title_array.push("利润");
-  title_array.push("利润率");
+  title_array.push("毛利");
+  title_array.push("毛利率");
 
   // 根据title，查询出 index。
   for(var i=0; i<title_array.length; i++ ){
@@ -167,6 +169,7 @@ var copy_order_detail_150 = function(){
     var one_order = ORDER_DETAIL[i];
     if( !isblank(one_order[0]) ){
       must_col_content = pick_from_array(must_col_idx, ORDER_DETAIL[i]);
+
       ORDER_DETAIL_SMALL.push(must_col_content);
       must_col_content = null;
     }
@@ -174,6 +177,19 @@ var copy_order_detail_150 = function(){
     // console.log(must_col_content);
     //console.log(i);
   }
+
+  // 进行数据清洗，物料号，把18位的编码缩减到16位。
+  var prod_id_index = find_title_index(must_col_title, "物料号");
+  for(var i=1;i<ORDER_DETAIL_SMALL.length; i++){
+    var prod_id_temp = ORDER_DETAIL_SMALL[i][prod_id_index];
+    if( 18 === prod_id_temp.length ){
+      ORDER_DETAIL_SMALL[i][prod_id_index] = prod_id_temp.substring(2);
+    }else{
+      ERR_MSG.put("数据出错：订单表中的物料号长度不是20。行数：" + i + " 物料号：" + prod_id_temp );
+    }
+  }
+
+
   //console.log(ORDER_DETAIL_SMALL);
 
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
@@ -185,6 +201,11 @@ var copy_order_detail_150 = function(){
 
 // 第六步：补充数据到工作文件。
 var fill_field_160 = function(){
+  console.log("fill_field_160");
+  vm.step = 161;
+  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
+  
+
   // 装入  [销售订单明细精简版.xlsx]
   var obj_sheet = xlsx.parse('data/销售订单明细精简版.xlsx');
   var order_info =  obj_sheet[0].data;
@@ -216,10 +237,15 @@ var fill_field_160 = function(){
     // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
     //console.log(cost);
-    // 成本 填入表格中。
-    a_order[index_cost] = cost;
-
-    //if( i>100 ) {break;}
+    
+    if( undefined === cost ){
+      ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：" + (i+1) + " 物料号：" + prod_id_in_order );
+      a_order[index_cost] = -1;
+    }else{
+      // 成本 填入表格中。
+      a_order[index_cost] = cost;
+      //console.log(cost);
+    }
 
   }
 
@@ -230,19 +256,166 @@ var fill_field_160 = function(){
 };
 
 // 第七步：计算订单毛利。
+/* 
+毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
+
+本步骤中，只计算  （销售收入-成本单价*交货数量）/1.17
+*/
 var calc_gross_170 = function(){
+  console.log("calc_gross_170");
+  vm.step = 171;
+  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
+
+  // 装入  [销售订单明细精简版.xlsx]
+  var obj_sheet = xlsx.parse('data/销售订单明细精简版(包含成本价).xlsx');
+  var order_info =  obj_sheet[0].data;
+  MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
+
+  var title_array = order_info[0];
+  var index_total = find_title_index(title_array, "销售金额");
+  var index_delivery_count = find_title_index(title_array, "实际交货数量");
+  var index_cost = find_title_index(title_array, "成本单价");
+  var index_gross = find_title_index(title_array, "毛利");
+  var index_gross_rate = find_title_index(title_array, "毛利率");
+
+
+  // 因为要跳过title，所以下标从 1 开始。
+  for(var i=1; i<order_info.length; i++){
+    var a_order = order_info[i];
+
+    var total = a_order[index_total];
+    var delivery_count = a_order[index_delivery_count];
+    var cost = a_order[index_cost];
+
+    if( -1 === cost ){
+      console.log("数据错，忽略。");
+    }
+    else if( 0 < cost ){
+      a_order[index_gross] = ( total - (cost * delivery_count) ) / TAX_RATE ;
+      a_order[index_gross_rate] = a_order[index_gross] / total * 100;
+    }else{
+      ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost );
+    }
+
+  }
+
+  var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
+  fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
 
   vm.step = 180;
 };
 
 // 第六步：加总物料毛利。
 var calc_prod_180 = function(){
+  console.log("calc_prod_180");
+  vm.step = 181;
+  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
+
+  // 装入  [销售订单明细精简版.xlsx]
+  var obj_sheet = xlsx.parse('data/销售订单明细精简版(包含成本价).xlsx');
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
+
+
+  var title_array = gross_info[0];
+  // 结果数组增加字段
+  title_array.push("单物料毛利");
+
+  var index_prod_id = find_title_index(title_array, "物料号");
+  var index_prod_group_id = find_title_index(title_array, "物料组");
+  //var index_total = find_title_index(title_array, "销售金额");
+  var index_gross = find_title_index(title_array, "毛利");
+  var index_gross_sum = find_title_index(title_array, "单物料毛利");
+  
+  
+
+  var gross_sum = [];
+  // 加总毛利
+  for(var i=1; i<gross_info.length; i++){
+    var a_order = gross_info[i];
+
+    var prod_id = a_order[index_prod_id];
+    var gross = a_order[index_gross];
+
+    if( gross_sum[prod_id] ){
+      // 单品汇总信息已经存在
+      a_temp = gross_sum[prod_id];
+      // 累加毛利
+      a_temp[index_gross_sum] += gross;
+    }
+    else{
+      // 单品汇总信息 尚未存在
+      a_order.push(gross);
+      gross_sum[prod_id] = a_order;
+    }
+
+  }
+
+  var prod_gross = [];
+  // 填充标题栏数据
+  prod_gross.push(title_array);
+  for(var key in gross_sum){
+      prod_gross.push(gross_sum[key]);
+  } 
+
+
+  var buffer = xlsx.build([{name: "物料毛利", data: prod_gross}]);
+  fs.writeFileSync( "data/物料毛利.xlsx", buffer);
 
   vm.step = 190;
 };
 
 // 第六步：加总物料组毛利。
 var calc_group_190 = function(){
+  console.log("calc_group_190");
+  vm.step = 191;
+  MSG.put( "数据较多，载入约需5秒。请耐心等待。");
+
+  // 装入  [销售订单明细精简版.xlsx]
+  var obj_sheet = xlsx.parse('data/物料毛利.xlsx');
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 物料毛利.xlsx  数据读入成功。");
+
+  var title_array = gross_info[0];
+  // 结果数组增加字段
+  title_array.push("物料组毛利");
+
+  var index_prod_group_id = find_title_index(title_array, "物料组");
+  var index_gross = find_title_index(title_array, "单物料毛利");
+  var index_group_gross = find_title_index(title_array, "物料组毛利");
+
+  var group_sum = [];
+  // 加总物料组毛利
+  for(var i=1; i<gross_info.length; i++){
+    var a_prod_gross = gross_info[i];
+
+    var group_id = a_prod_gross[index_prod_group_id];
+    var gross = a_prod_gross[index_gross];
+
+    if( group_sum[group_id] ){
+      // 单品汇总信息已经存在
+      a_temp = group_sum[group_id];
+      // 累加毛利
+      a_temp[index_group_gross] += gross;
+    }
+    else{
+      // 单品汇总信息 尚未存在
+      a_prod_gross.push(gross);
+      group_sum[group_id] = a_prod_gross;
+    }
+
+  }
+
+  var group_gross_sum = [];
+  // 填充标题栏数据
+  group_gross_sum.push(title_array);
+  for(var key in group_sum){
+
+      group_gross_sum.push(group_sum[key]);
+  } 
+
+  var buffer = xlsx.build([{name: "物料组毛利", data: group_gross_sum}]);
+  fs.writeFileSync( "data/物料组毛利.xlsx", buffer);
 
   vm.step = 200;
 };
@@ -280,10 +453,7 @@ var find_title_index = function( title_array, t_name){
 };
 
 var getCost = function(prod_info, id, order_date){
-
-  console.log(id);
-    
-
+  //console.log(id);
   var a_index = -1;
   var prod_id = null;
   var id_a = id.trim();
@@ -298,7 +468,7 @@ var getCost = function(prod_info, id, order_date){
     if( isblank(prod_id) ){
       a_index = -1
     }else{
-      var id_b = "00" + prod_id.trim();   //  todo 临时解决编码长度不一致的问题。
+      var id_b = prod_id.trim(); 
 
       if( id_a == id_b ){
         a_index = i;
@@ -314,7 +484,7 @@ var getCost = function(prod_info, id, order_date){
     cost = "";
   }else{
     cost = prod_info[i][8];
-    console.log("-----------------" + cost);
+    //console.log("-----------------" + cost);
   }
   //console.log(cost);
   return cost;
