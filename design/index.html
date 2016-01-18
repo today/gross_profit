@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>陕西终端公司毛利分析</title>
+  
+  <link rel="stylesheet" href="css/app.css">
+  <style type="text/css">
+
+  </style>
+  
+  <script type="text/javascript" src="js/vue.js"></script>
+  <script type="text/javascript" src="js/lib.js"></script>
+  <script type="text/javascript" src="js/index.js"></script>
+
+</head>
+<body id="app">
+    <nav>
+        <ul><p class="logo">陕西终端公司毛利分析</p></ul>
+    </nav>
+  <div class="now"></div>
+  <div class="msg-frame">
+    <div id="msg_area">
+        <div v-for="a_msg in run_msg">
+          {{a_msg}} 
+        </div>
+        <div class="err_msg" v-for="a_msg in err_msg">
+          {{a_msg}} 
+        </div>
+    </div>
+
+    <div id="cmd_area">
+      工作目录：
+      <div v-for="a_step in step_array">
+        <span v-if="step>=a_step.idx">
+        {{a_step.desc}} 
+        <button :disabled="!(step==a_step.idx)" @click="a_step.func" > 运行 </button><br/><br/>
+        </span>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <div id="debug_area"><h3>Debug Area</h3>
+    step:<input  type="number" v-model="step"  name="text_1" />
+    {{step}}
+    <br><br>
+    <button  @click="set140" > 140 </button><br/>
+    <button  onClick="loadfile()" > loadfile </button><br/>
+    <br/>
+    <br>
+  </div>
+
+
+
+<script type="text/javascript">
+
+
+var MSG = Msg.createNew();
+var ERR_MSG = Msg.createNew(); 
+
+var vm = new Vue({
+  el: '#app',
+  data: {
+    run_flag: true,
+    step:110,
+    step_array:[],
+    run_msg: MSG.msg_list,
+    err_msg: ERR_MSG.msg_list
+  },
+  methods: {
+    getPwd: function () {
+      console.log("This is test function.");
+    },
+    set140: function(){vm.step=140;}
+  }
+});
+
+var make_step = function( i_index, s_desc, f_func_name ){
+  var obj_step = {};
+  obj_step.idx = i_index;
+  obj_step.desc = s_desc;
+  obj_step.func = f_func_name;
+  return obj_step;
+};
+
+vm.step_array.push( make_step( 110, "第一步：检查环境。", check_env_110 ) );
+vm.step_array.push( make_step( 120, "第二步：检查状态。", check_status_120 ) );
+vm.step_array.push( make_step( 130, "第三步：检查输入文件是否齐备。", check_src_130 ) );
+vm.step_array.push( make_step( 140, "第四步：读入销售订单明细，并检查内容。", load_order_detail_140 ) );
+vm.step_array.push( make_step( 150, "第五步：筛选数据到工作文件。", copy_order_detail_150 ) );
+vm.step_array.push( make_step( 160, "第六步：补充数据到工作文件。", fill_field_160 ) );
+vm.step_array.push( make_step( 170, "第七步：计算订单毛利。", calc_gross_170 ) );
+vm.step_array.push( make_step( 180, "第八步：加总物料毛利。", calc_prod_180 ) );
+vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc_group_190 ) );
+
+init_100();
+
+console.log(vm.step_array);
+
+var loadfile = function(){
+  console.log( " 销售订单明细精简版.XLSX  开始读入。");
+  var order_info = xlsx.parse('data/销售订单明细精简版.xlsx'); 
+  console.log( " 销售订单明细精简版.XLSX  数据读入成功。");
+
+  console.log( " 物料清单.XLSX  开始读入。");
+  var prod_info = xlsx.parse("data/201511/物料清单.xlsx"); 
+  console.log( " 物料清单.XLSX  数据读入成功。");
+}
+
+
+</script>
+</body>
+</html>
+
+
+
+
