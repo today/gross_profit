@@ -15,9 +15,11 @@
 
 </head>
 <body id="app">
-  <p>陕西终端公司毛利分析</p>
-  <div >
-    
+    <nav>
+        <ul><p class="logo">陕西移动终端公司毛利分析</p></ul>
+    </nav>
+  <div class="now"></div>
+  <div class="msg-frame">
     <div id="msg_area">
         <div v-for="a_msg in run_msg">
           {{a_msg}} 
@@ -38,8 +40,9 @@
     </div>
 
   </div>
+  </div>
 
-  <div id="debug_area"><h3>Debug Area</h3>
+  <div id="debug_area" v-show="true1"><h3>Debug Area</h3>
     step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
