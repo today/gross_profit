@@ -3,6 +3,8 @@
 body {
   margin: 0;
   padding: 0; 
+  font-family: Helvetica , "Microsoft YaHei" , sans-serif;
+  font-size: 16px;
 }
 
 .logo {
@@ -67,14 +69,14 @@ nav {
 }
 
 .err_msg{
-	font-size: 1.2em;
-	color: red;
-
-    margin: 5px 5px 5px 5px;
-    padding: 5px;
-    border: 1px solid silver;
-    background-color:white;
-    box-shadow: 0px 0px 5px #000;
+	font-size: 1em;
+	color: white;
+    margin: 8px 5px;
+    padding: 8px;
+    background-color: #F44336;
+    box-shadow: 
+    0px 0px 2px 0px RGBA(0, 0, 0, 0.12),
+    0px 2px 2px 0px RGBA(0, 0, 0, 0.24);
 }
 
 #debug_area{
