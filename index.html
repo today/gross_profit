@@ -42,7 +42,7 @@
   </div>
   </div>
 
-  <div id="debug_area" v-show="true1"><h3>Debug Area</h3>
+  <div id="debug_area" style="display:none;"><h3>Debug Area</h3>
     step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
@@ -108,6 +108,25 @@ var loadfile = function(){
   var prod_info = xlsx.parse("data/201511/物料清单.xlsx"); 
   console.log( " 物料清单.XLSX  数据读入成功。");
 }
+
+
+var debug_flag = 0;
+document.onkeydown = function(event) { 
+  keynum = event.which;
+  // 这一段是用来显示隐藏debug区的。
+  if (keynum==192){
+    if( debug_flag === 0 ){
+      debug_flag++;
+    }else if(debug_flag == 1 ){
+      debug_flag++;
+      document.getElementById('debug_area').style.display="";//显示     
+    }
+    else if(debug_flag == 2 ){
+      debug_flag = 0;
+      document.getElementById('debug_area').style.display="none";//隐藏
+    }
+  }
+};
 
 
 </script>
