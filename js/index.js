@@ -13,7 +13,7 @@ var TAX_RATE = 1.17 ;
 
 
 var init_100 = function(){
-  console.log("check_evn_100");
+
   MSG.put("系统启动。");
 
   setInterval(function() {
@@ -28,20 +28,18 @@ var init_100 = function(){
 }
 
 var check_env_110 = function(){
-  console.log("check_evn_101");
-
+  
   // 程序运行所必须的库和配置文件
   var envlist = [];
   envlist.push("config.json");
   envlist.push("node_modules/node-xlsx/");
   envlist.push("node_modules/underscore/underscore-min.js");
 
-  vm.step = 120;
-  return "";
+  return true;
 };
 
 var check_status_120 = function(){
-  console.log("check_status");
+  
   var run_flag = true;
 
   // 程序运行所必须的数据源
@@ -67,49 +65,40 @@ var check_status_120 = function(){
   }
 
   if( run_flag ){
-    vm.step = 130;
+    return true;
   }else{
-    vm.step = 110;
+    return false;
   }
 
   return "";
 };
 
 var check_src_130 = function(){
-  console.log("check_src");
-  vm.step = 140;
-  return "";
+  return true;;
 };
 
 var load_order_detail_140 = function(){
-  console.log("load_order_detail_140");
+  
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
-  vm.step = 141;
 
   var obj = null;
-  setTimeout(function() {
-    obj = xlsx.parse('data//201511/11月销售订单明细.xlsx'); // 读入xlsx文件
-    //  obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
-
-    // head = obj[0].data[0];
-    ORDER_DETAIL = obj[0].data;   // 
-    //console.log(obj[0].name);
-    MSG.put( "销售订单明细数据读入成功。");
-    vm.step = 150;
-  }, 100);
   
+  obj = xlsx.parse('data//201511/11月销售订单明细.xlsx'); // 读入xlsx文件
+  //  obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
 
-  
-  return "";
+  // head = obj[0].data[0];
+  ORDER_DETAIL = obj[0].data;   // 
+  //console.log(obj[0].name);
+  MSG.put( "销售订单明细数据读入成功。");
+
+  return true;;
 };
 
 
 
 var copy_order_detail_150 = function(){
-  console.log("copy_order_detail_150");
-  vm.step = 151;
+
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
-  
   
   var must_col_title = [];
   must_col_title.push(make_title("实际交货数量"));
@@ -195,14 +184,13 @@ var copy_order_detail_150 = function(){
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
   fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
 
-  vm.step = 160;
-  return "";
+  
+  return true;;
 };
 
 // 第六步：补充数据到工作文件。
 var fill_field_160 = function(){
-  console.log("fill_field_160");
-  vm.step = 161;
+  
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   
 
@@ -252,7 +240,7 @@ var fill_field_160 = function(){
   var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
   fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
 
-  vm.step = 170;
+  return true;
 };
 
 // 第七步：计算订单毛利。
@@ -262,8 +250,7 @@ var fill_field_160 = function(){
 本步骤中，只计算  （销售收入-成本单价*交货数量）/1.17
 */
 var calc_gross_170 = function(){
-  console.log("calc_gross_170");
-  vm.step = 171;
+  
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
@@ -302,13 +289,12 @@ var calc_gross_170 = function(){
   var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
   fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
 
-  vm.step = 180;
+  return true;;
 };
 
 // 第六步：加总物料毛利。
 var calc_prod_180 = function(){
-  console.log("calc_prod_180");
-  vm.step = 181;
+  
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
@@ -362,13 +348,12 @@ var calc_prod_180 = function(){
   var buffer = xlsx.build([{name: "物料毛利", data: prod_gross}]);
   fs.writeFileSync( "data/物料毛利.xlsx", buffer);
 
-  vm.step = 190;
+  return true;
 };
 
 // 第六步：加总物料组毛利。
 var calc_group_190 = function(){
-  console.log("calc_group_190");
-  vm.step = 191;
+  
   MSG.put( "数据较多，载入约需5秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
@@ -417,7 +402,7 @@ var calc_group_190 = function(){
   var buffer = xlsx.build([{name: "物料组毛利", data: group_gross_sum}]);
   fs.writeFileSync( "data/物料组毛利.xlsx", buffer);
 
-  vm.step = 200;
+  return true;
 };
 
 
@@ -494,6 +479,8 @@ var find_prod = function(id){
   var prod = null;
   return prod;
 };
+
+
 
 
 
