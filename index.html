@@ -67,7 +67,8 @@ var vm = new Vue({
     step:110,
     step_array:[],
     run_msg: MSG.msg_list,
-    err_msg: ERR_MSG.msg_list
+    err_msg: ERR_MSG.msg_list,
+    base_dir: "data/201601/"
   },
   methods: {
     do_proc: function(a_step){
@@ -113,7 +114,7 @@ vm.step_array.push( make_step( 160, "第六步：补充数据到工作文件。"
 vm.step_array.push( make_step( 170, "第七步：计算订单毛利。", calc_gross_170, 180 ) );
 vm.step_array.push( make_step( 180, "第八步：加总物料毛利。", calc_prod_180, 190 ) );
 vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc_group_190, 200 ) );
-
+vm.step_array.push( make_step( 200, "第十步：计算渠道毛利。正在建设中。", calc_branch_200, 200 ) );
 init_100();
 
 console.log(vm.step_array);

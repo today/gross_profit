@@ -44,13 +44,12 @@ var check_status_120 = function(){
 
   // 程序运行所必须的数据源
   var srcFilelist = [];
-  srcFilelist.push("data/201511/11月销售订单明细.XLSX");
-  srcFilelist.push("data/201511/物料清单.XLSX");
-  srcFilelist.push("data/201511/SCM客户明细.XLSX");
-  srcFilelist.push("data/201511/2015.11月计提并使用返利.XLSX");
-  srcFilelist.push("data/201511/2015.12促销品领用出库明细.XLSX");
+  srcFilelist.push( vm.base_dir + "1月销售明细.XLSX");
+  srcFilelist.push( vm.base_dir + "物料清单.XLSX");
+  srcFilelist.push( vm.base_dir + "SCM客户明细.XLSX");
+  //srcFilelist.push( vm.base_dir + "2015.11月计提并使用返利.XLSX");
+  //srcFilelist.push( vm.base_dir + "2015.12促销品领用出库明细.XLSX");
   
-  //srcFilelist.push("abc.XLSX");
 
   for( var i=0;i<srcFilelist.length;i++ ){
     var filename = srcFilelist[i];
@@ -83,12 +82,15 @@ var load_order_detail_140 = function(){
 
   var obj = null;
   
-  obj = xlsx.parse('data//201511/11月销售订单明细.xlsx'); // 读入xlsx文件
-  //  obj = xlsx.parse('data/2sheet.xlsx'); // 读入xlsx文件
+  obj = xlsx.parse( vm.base_dir + "1月销售明细.xlsx"); // 读入xlsx文件
+  
+  // 取出第一个sheet
+  ORDER_DETAIL = obj[0].data; 
 
-  // head = obj[0].data[0];
-  ORDER_DETAIL = obj[0].data;   // 
-  //console.log(obj[0].name);
+  // 清洗数据：去除空格
+  trim_array_element(ORDER_DETAIL[0]); 
+  console.log(ORDER_DETAIL[0]);
+
   MSG.put( "销售订单明细数据读入成功。");
 
   return true;;
@@ -104,7 +106,7 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("实际交货数量"));
   must_col_title.push(make_title("物料描述"));
   must_col_title.push(make_title("交货完成状态"));
-  must_col_title.push(make_title("销售金额"));
+  must_col_title.push(make_title("销售价格"));
   must_col_title.push(make_title("订单类型"));
   must_col_title.push(make_title("渠道"));
   must_col_title.push(make_title("客户"));
@@ -182,7 +184,7 @@ var copy_order_detail_150 = function(){
   //console.log(ORDER_DETAIL_SMALL);
 
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
-  fs.writeFileSync( "data/销售订单明细精简版.xlsx", buffer);
+  fs.writeFileSync( vm.base_dir + "销售订单明细精简版.xlsx", buffer);
 
   
   return true;;
@@ -195,12 +197,12 @@ var fill_field_160 = function(){
   
 
   // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse('data/销售订单明细精简版.xlsx');
+  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版.xlsx");
   var order_info =  obj_sheet[0].data;
   MSG.put( " 销售订单明细精简版.XLSX  数据读入成功。");
   
   // 装入  [物料清单.XLSX]
-  var obj_sheet2 = xlsx.parse('data/201511/物料清单.xlsx'); 
+  var obj_sheet2 = xlsx.parse( vm.base_dir + "物料清单.xlsx"); 
   var prod_info = obj_sheet2[0].data;
   MSG.put( " 物料清单.XLSX  数据读入成功。");
   // 物料清单中编码为 1001000202013110  16位   
@@ -238,28 +240,28 @@ var fill_field_160 = function(){
   }
 
   var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
-  fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "销售订单明细精简版(包含成本价).xlsx", buffer);
 
   return true;
 };
 
 // 第七步：计算订单毛利。
 /* 
-毛利 = （销售收入-成本单价*交货数量）/1.17-下游价返-促销费
+毛利 = (销售价格-成本单价)*交货数量/1.17-下游价返-促销费
 
-本步骤中，只计算  （销售收入-成本单价*交货数量）/1.17
+本步骤中，只计算  (销售价格-成本单价)*交货数量/1.17
 */
 var calc_gross_170 = function(){
   
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse('data/销售订单明细精简版(包含成本价).xlsx');
+  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版(包含成本价).xlsx");
   var order_info =  obj_sheet[0].data;
   MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
 
   var title_array = order_info[0];
-  var index_total = find_title_index(title_array, "销售金额");
+  var index_price = find_title_index(title_array, "销售价格");
   var index_delivery_count = find_title_index(title_array, "实际交货数量");
   var index_cost = find_title_index(title_array, "成本单价");
   var index_gross = find_title_index(title_array, "毛利");
@@ -270,7 +272,7 @@ var calc_gross_170 = function(){
   for(var i=1; i<order_info.length; i++){
     var a_order = order_info[i];
 
-    var total = a_order[index_total];
+    var price = a_order[index_price];
     var delivery_count = a_order[index_delivery_count];
     var cost = a_order[index_cost];
 
@@ -278,8 +280,8 @@ var calc_gross_170 = function(){
       console.log("数据错，忽略。");
     }
     else if( 0 < cost ){
-      a_order[index_gross] = ( total - (cost * delivery_count) ) / TAX_RATE ;
-      a_order[index_gross_rate] = a_order[index_gross] / total * 100;
+      a_order[index_gross] = (price - cost) * delivery_count / TAX_RATE ;
+      a_order[index_gross_rate] = a_order[index_gross] / price * 100;
     }else{
       ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost );
     }
@@ -287,7 +289,7 @@ var calc_gross_170 = function(){
   }
 
   var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
-  fs.writeFileSync( "data/销售订单明细精简版(包含成本价).xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "销售订单明细精简版(包含成本价).xlsx", buffer);
 
   return true;;
 };
@@ -298,7 +300,7 @@ var calc_prod_180 = function(){
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse('data/销售订单明细精简版(包含成本价).xlsx');
+  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版(包含成本价).xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
 
@@ -309,7 +311,6 @@ var calc_prod_180 = function(){
 
   var index_prod_id = find_title_index(title_array, "物料号");
   var index_prod_group_id = find_title_index(title_array, "物料组");
-  //var index_total = find_title_index(title_array, "销售金额");
   var index_gross = find_title_index(title_array, "毛利");
   var index_gross_sum = find_title_index(title_array, "单物料毛利");
   
@@ -346,7 +347,7 @@ var calc_prod_180 = function(){
 
 
   var buffer = xlsx.build([{name: "物料毛利", data: prod_gross}]);
-  fs.writeFileSync( "data/物料毛利.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "物料毛利.xlsx", buffer);
 
   return true;
 };
@@ -357,7 +358,7 @@ var calc_group_190 = function(){
   MSG.put( "数据较多，载入约需5秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse('data/物料毛利.xlsx');
+  var obj_sheet = xlsx.parse( vm.base_dir + "物料毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 物料毛利.xlsx  数据读入成功。");
 
@@ -400,11 +401,16 @@ var calc_group_190 = function(){
   } 
 
   var buffer = xlsx.build([{name: "物料组毛利", data: group_gross_sum}]);
-  fs.writeFileSync( "data/物料组毛利.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "物料组毛利.xlsx", buffer);
 
   return true;
 };
 
+
+var calc_branch_200 = function(){
+  
+  return true;
+};
 
 var pick_from_array = function(index_array, src_array){
 

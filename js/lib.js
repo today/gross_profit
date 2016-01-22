@@ -18,7 +18,18 @@ var Msg = {
   }
 };
 
-
+function trim_array_element( a_array ){
+  for( var i=0; i<a_array.length; i++){
+    var temp = a_array[i];
+    if( temp ){
+      if( (typeof temp) == "string" ){
+        a_array[i] = temp.trim();
+      }else{
+        a_array[i] = temp.toString().trim();
+      }
+    }
+  }
+}
 
 function isblank(strA){
   if(strA){
