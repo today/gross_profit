@@ -191,6 +191,7 @@ var copy_order_detail_150 = function(){
 };
 
 // 第六步：补充数据到工作文件。
+// 成本价格取数的时候  应该使用“内控成本价格” 
 var fill_field_160 = function(){
   
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
@@ -212,7 +213,7 @@ var fill_field_160 = function(){
   var title_array = order_info[0];
   var index_prod_id = find_title_index(title_array, "物料号");
   var index_order_date = find_title_index(title_array, "创建日期");
-  var index_cost = find_title_index(title_array, "成本单价");
+  var index_cost = find_title_index(title_array, "内控成本价格");
 
   // 因为要跳过title，所以下标从 1 开始。
   for(var i=1; i<order_info.length; i++){
