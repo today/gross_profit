@@ -46,7 +46,7 @@
     step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
-    <button  @click="set140" > 140 </button><br/>
+    <button  @click="setStep(180)" > 180 </button><br/>
     <button  onClick="loadfile()" > loadfile </button><br/>
     <br/>
     <br>
@@ -92,7 +92,7 @@ var vm = new Vue({
         }, 200);
       }
     },
-    set140: function(){vm.step=140;}
+    setStep: function(i_step){vm.step=i_step;}
   }
 });
 

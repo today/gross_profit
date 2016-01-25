@@ -5,7 +5,6 @@
  */
 
 var fs = require('fs');
-var _ = require('underscore');
 var xlsx = require("node-xlsx");
 
 var ORDER_DETAIL = null;
@@ -289,8 +288,8 @@ var calc_gross_170 = function(){
 
   }
 
-  var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
-  fs.writeFileSync(  vm.base_dir + "销售订单明细精简版(包含成本价).xlsx", buffer);
+  var buffer = xlsx.build([{name: "销售毛利", data: order_info}]);
+  fs.writeFileSync(  vm.base_dir + "销售毛利.xlsx", buffer);
 
   return true;;
 };
@@ -301,53 +300,74 @@ var calc_prod_180 = function(){
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版(包含成本价).xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
-  MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
+  MSG.put( " 销售毛利.xlsx  数据读入成功。");
 
-
+  // 获取title
   var title_array = gross_info[0];
   // 结果数组增加字段
   title_array.push("单物料毛利");
 
+  var index_count = find_title_index(title_array, "实际交货数量");
   var index_prod_id = find_title_index(title_array, "物料号");
   var index_prod_group_id = find_title_index(title_array, "物料组");
   var index_gross = find_title_index(title_array, "毛利");
   var index_gross_sum = find_title_index(title_array, "单物料毛利");
   
-  
-
+  // 这将是一个命名数组，也就是类似java中的hashArray，或者Py中的dict
   var gross_sum = [];
   // 加总毛利
   for(var i=1; i<gross_info.length; i++){
     var a_order = gross_info[i];
 
+    var count = a_order[index_count];
     var prod_id = a_order[index_prod_id];
     var gross = a_order[index_gross];
 
+    
     if( gross_sum[prod_id] ){
       // 单品汇总信息已经存在
       a_temp = gross_sum[prod_id];
       // 累加毛利
       a_temp[index_gross_sum] += gross;
+      // 累加数量
+      a_temp[index_count] += count;
     }
     else{
       // 单品汇总信息 尚未存在
       a_order.push(gross);
       gross_sum[prod_id] = a_order;
     }
-
   }
 
   var prod_gross = [];
-  // 填充标题栏数据
+  // 填充标题栏
   prod_gross.push(title_array);
+  // 填充数据
   for(var key in gross_sum){
       prod_gross.push(gross_sum[key]);
-  } 
+  }
+
+  // 标识不需要的列
+  var index_will_delete = [];
+  index_will_delete.push( find_title_index(title_array, "销售数量") );
+  index_will_delete.push( find_title_index(title_array, "订单类型") );
+  index_will_delete.push( find_title_index(title_array, "交货完成状态") );
+  index_will_delete.push( find_title_index(title_array, "实际交货日期") );
+  index_will_delete.push( find_title_index(title_array, "渠道") );
+  index_will_delete.push( find_title_index(title_array, "客户") );
+  index_will_delete.push( find_title_index(title_array, "客户名称") );
+  index_will_delete.push( find_title_index(title_array, "城市") );
+  index_will_delete.push( find_title_index(title_array, "客户参考号") );
+  index_will_delete.push( find_title_index(title_array, "创建日期") );
+  index_will_delete.push( find_title_index(title_array, "毛利") );
+  index_will_delete.push( find_title_index(title_array, "毛利率") );
+  // 清除不需要的列
+  var thin_gross = del_col_from_array(prod_gross, index_will_delete);
 
 
-  var buffer = xlsx.build([{name: "物料毛利", data: prod_gross}]);
+  var buffer = xlsx.build([{name: "物料毛利", data: thin_gross}]);
   fs.writeFileSync(  vm.base_dir + "物料毛利.xlsx", buffer);
 
   return true;
