@@ -119,7 +119,7 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("客户参考号"));
   must_col_title.push(make_title("创建日期"));
   // 以下数据，要从其他文件中获得
-  must_col_title.push(make_title("成本单价"));
+  must_col_title.push(make_title("内控成本价格"));
   //must_col_title.push(make_title("下游价返"));
   //must_col_title.push(make_title("促销费"));
   must_col_title.push(make_title("毛利"));
@@ -128,7 +128,7 @@ var copy_order_detail_150 = function(){
   
   var title_array = ORDER_DETAIL[0];
   // 把附加字段添加到 title 行中。
-  title_array.push("成本单价");
+  title_array.push("内控成本价格");
   //title_array.push("下游价返");
   //title_array.push("促销费");
   title_array.push("毛利");
@@ -263,7 +263,7 @@ var calc_gross_170 = function(){
   var title_array = order_info[0];
   var index_price = find_title_index(title_array, "销售价格");
   var index_delivery_count = find_title_index(title_array, "实际交货数量");
-  var index_cost = find_title_index(title_array, "成本单价");
+  var index_cost = find_title_index(title_array, "内控成本价格");
   var index_gross = find_title_index(title_array, "毛利");
   var index_gross_rate = find_title_index(title_array, "毛利率");
 
@@ -503,12 +503,15 @@ var getCost = function(prod_info, id, order_date){
     }
   }
 
+  // TOOD 要处理成根据title找出index的模式。
+  //var index_cost = find_title_index(prod_info[0], "内控成本价格");
+
   var cost = "";
   if( a_index < 0 ){
     console.log("Warning: index is -1.");
     cost = "";
   }else{
-    cost = prod_info[i][8];
+    cost = prod_info[i][10];
     //console.log("-----------------" + cost);
   }
   //console.log(cost);

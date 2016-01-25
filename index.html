@@ -21,10 +21,11 @@
   <div class="now"></div>
   <div class="msg-frame">
     <div id="msg_area">
-        <div v-for="a_msg in run_msg">
+        <div v-for="a_msg in run_msg.msg_list">
           {{a_msg}} 
         </div>
-        <div class="err_msg" v-for="a_msg in err_msg">
+        <div class="err_msg" v-show="err_msg.msg_count>0" >错误数量：{{err_msg.msg_count}}</div>
+        <div class="err_msg" v-for="a_msg in err_msg.msg_list">
           {{a_msg}} 
         </div>
     </div>
@@ -66,8 +67,8 @@ var vm = new Vue({
     run_flag: true,
     step:110,
     step_array:[],
-    run_msg: MSG.msg_list,
-    err_msg: ERR_MSG.msg_list,
+    run_msg: MSG,
+    err_msg: ERR_MSG,
     base_dir: "data/201601/"
   },
   methods: {
