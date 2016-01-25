@@ -387,6 +387,7 @@ var calc_group_190 = function(){
   // 结果数组增加字段
   title_array.push("物料组毛利");
 
+  var index_count = find_title_index(title_array, "实际交货数量");
   var index_prod_group_id = find_title_index(title_array, "物料组");
   var index_gross = find_title_index(title_array, "单物料毛利");
   var index_group_gross = find_title_index(title_array, "物料组毛利");
@@ -396,6 +397,7 @@ var calc_group_190 = function(){
   for(var i=1; i<gross_info.length; i++){
     var a_prod_gross = gross_info[i];
 
+    var count = a_prod_gross[index_count];
     var group_id = a_prod_gross[index_prod_group_id];
     var gross = a_prod_gross[index_gross];
 
@@ -404,24 +406,35 @@ var calc_group_190 = function(){
       a_temp = group_sum[group_id];
       // 累加毛利
       a_temp[index_group_gross] += gross;
+      // 累加数量
+      a_temp[index_count] += count;
     }
     else{
       // 单品汇总信息 尚未存在
       a_prod_gross.push(gross);
       group_sum[group_id] = a_prod_gross;
     }
-
   }
 
   var group_gross_sum = [];
-  // 填充标题栏数据
+  // 填充标题栏
   group_gross_sum.push(title_array);
+  // 填充数据
   for(var key in group_sum){
-
       group_gross_sum.push(group_sum[key]);
   } 
 
-  var buffer = xlsx.build([{name: "物料组毛利", data: group_gross_sum}]);
+  // 标识不需要的列
+  var index_will_delete = [];
+  index_will_delete.push( find_title_index(title_array, "物料描述") );
+  index_will_delete.push( find_title_index(title_array, "销售价格") );
+  index_will_delete.push( find_title_index(title_array, "物料号") );
+  index_will_delete.push( find_title_index(title_array, "成本单价") );
+  index_will_delete.push( find_title_index(title_array, "单物料毛利") );
+  // 清除不需要的列
+  var thin_gross = del_col_from_array(group_gross_sum, index_will_delete);
+
+  var buffer = xlsx.build([{name: "物料组毛利", data: thin_gross}]);
   fs.writeFileSync(  vm.base_dir + "物料组毛利.xlsx", buffer);
 
   return true;
