@@ -37,11 +37,11 @@ nav {
 }
 
 .now {
-    margin: 28px;
+    margin: 20px;
 }
 
-.msg-frame {
-    width: 76%;
+.main-frame {
+    width: 90%;
     margin: 0 auto;
 }
 
@@ -92,7 +92,5 @@ nav {
     bottom:0px;
     position:fixed;
 }
-#debug_area input {
-	font-size: 1em;
-}
+
 
