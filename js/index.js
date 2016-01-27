@@ -276,8 +276,10 @@ var calc_gross_170 = function(){
       console.log("数据错，忽略。");
     }
     else if( 0 < cost ){
-      a_order[index_gross] = (price - cost) * delivery_count / TAX_RATE ;
-      a_order[index_gross_rate] = a_order[index_gross] / price * 100;
+      var cost_sum = cost * delivery_count;
+      var income_sum = price * delivery_count
+      a_order[index_gross] = (income_sum - cost_sum) / TAX_RATE ;
+      a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
       ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost );
     }
