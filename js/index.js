@@ -447,14 +447,21 @@ var getProd_info = function(){
   var prod_info = obj_sheet2[0].data;
   MSG.put( " 物料清单.XLSX  数据读入成功。");
 
+  for(var i=1; i<prod_info.length; i++){
+    prod_info[i].push(40000);
+  }
+
   // 取出必要的列
   var title_array = prod_info[0];
+  title_array.push("开始变动日期")
+
   console.log( " 物料清单.xlsx  ");
   console.log(title_array);
   var index_must = [];
   index_must.push( find_title_index(title_array, "物料号") );
   index_must.push( find_title_index(title_array, "物料描述") );
   index_must.push( find_title_index(title_array, "内控成本价格") );
+  index_must.push( find_title_index(title_array, "开始变动日期") );
   var prod_must_col = select_col_from_array(prod_info, index_must);
   
   // 装入   内控成本价格变动--1月汇总.xlsx
@@ -463,14 +470,18 @@ var getProd_info = function(){
   MSG.put( " 内控成本价格变动--1月汇总.xlsx  数据读入成功。");
   // 取出必要的列
   var title_array_2 = price_history[0];
-  console.log( " 内控成本价格变动--1月汇总.xlsx  ");
-  console.log(title_array);
+
   var index_must_2 = [];
   index_must_2.push( find_title_index(title_array_2, "物料编码") );
   index_must_2.push( find_title_index(title_array_2, "产品描述") );
   index_must_2.push( find_title_index(title_array_2, "内控成本价格") );
   index_must_2.push( find_title_index(title_array_2, "开始变动日期") );
-  var prod_history_col = select_col_from_array(price_history, index_must_2);
+  var cost_history_col = select_col_from_array(price_history, index_must_2);
+
+  // 合并价格变动数组到物料数组中
+  for(var i=1; i<cost_history_col.length; i++){
+    prod_must_col.push(cost_history_col[i]);
+  }
 
   console.log(index_must);
   console.log(index_must_2);
@@ -515,6 +526,7 @@ var find_title_index = function( title_array, t_name){
 
 var getCost = function(prod_info, id, order_date){
   //console.log(id);
+  var temp_array = [];
   var a_index = -1;
   var prod_id = null;
   var id_a = id.trim();
@@ -522,10 +534,12 @@ var getCost = function(prod_info, id, order_date){
   // 处理成根据title找出index的模式。
   var title_array = prod_info[0];
   id_index = find_title_index(title_array, "物料号");
+  cost_index = find_title_index(title_array, "内控成本价格");
+  date_index = find_title_index(title_array, "开始变动日期");
 
   for(var i=2; i<prod_info.length; i++){
 
-    prod_id = prod_info[i][0];
+    prod_id = prod_info[i][id_index];
     if(_.isNumber(prod_id)){
       prod_id = ""+prod_id;
     }
@@ -537,22 +551,50 @@ var getCost = function(prod_info, id, order_date){
       var id_b = prod_id.trim(); 
 
       if( id_a == id_b ){
-        a_index = i;
-        
-        break;
+        temp_array.push(prod_info[i]);
       }
     }
   }
 
-  var cost = "";
-  if( a_index < 0 ){
-    console.log("Warning: index is -1.");
+  // 看看哪个价钱是当前的价钱
+  var cost = -1;
+  if( temp_array.length === 0 ){
+    console.log("Warning: cost not found.");
     cost = "";
-  }else{
-    cost = prod_info[i][id_index];
-    //console.log("-----------------" + cost);
   }
-  //console.log(cost);
+  else if( temp_array.length === 1 ){
+    cost = temp_array[0][cost_index];
+  }
+  else{
+    // 先排序。
+    console.log("出现多个成本价，找日期最接近的那个。 order_date= " + order_date );
+    console.log(temp_array);
+    temp_array = _.sortBy(temp_array, function(num){ return num[date_index]; });
+    console.log(temp_array);
+
+    var temp_date = 0;
+    for(var i=1;i<temp_array.length; i++){
+      var c1 = temp_array[i-1];
+      var c2 = temp_array[i];
+      if( order_date >= c1[date_index] && order_date < c2[date_index] ){
+        cost = temp_array[i-1][cost_index];
+        console.log("------------");
+        console.log(c1[date_index]);
+        console.log(order_date);
+        console.log(c2[date_index]);
+        console.log("------------");
+        break;
+      }
+      else if( i === temp_array.length-1 && order_date > c2[date_index]){
+        cost = temp_array[i][cost_index];
+        console.log("------------");
+        console.log(order_date);
+        console.log(c2[date_index]);
+        console.log("------------");
+      }
+    }
+  }
+
   return cost;
 };
 
