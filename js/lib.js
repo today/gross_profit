@@ -12,9 +12,28 @@ var Msg = {
     msg.msg_count = 0;
 
     msg.put = function(a_msg){ 
-      msg.msg_list.push("log " + msg.msg_list.length + ":" + a_msg); 
+      //msg.msg_list.push("log " + msg.msg_list.length + ":" + a_msg); 
+      msg.msg_list.push( a_msg ); 
       msg.msg_count++;
     };
+
+    msg.download = function(){
+      var evt = document.createEvent("HTMLEvents");
+      evt.initEvent("click", false, false);//initEvent 不加后两个参数在FF下会报错
+      
+      var a_txt = [];
+      msg.msg_list.forEach(function(e){  
+           a_txt.push(e);
+           a_txt.push("\n");  
+      });
+
+      var blob = new Blob(a_txt);
+
+      var aLink = document.createElement('a');
+      aLink.download = "错误数据记录.txt";
+      aLink.href = URL.createObjectURL(blob, { "type" : "text/xml" });
+      aLink.dispatchEvent(evt);
+    }
 
     return msg;
   }
