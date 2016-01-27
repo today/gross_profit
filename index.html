@@ -24,10 +24,16 @@
         <div v-for="a_msg in run_msg.msg_list">
           {{a_msg}} 
         </div>
-        <div class="err_msg" v-show="err_msg.msg_count>0" >错误数量：{{err_msg.msg_count}}</div>
-        <div class="err_msg" v-for="a_msg in err_msg.msg_list">
-          {{a_msg}} 
+        <div class="err_area" v-show="err_msg.msg_count>0" >
+          数据出错。错误数据：{{err_msg.msg_count}} 个。
+          只显示前 5 个。 
+          <br><button @click="err_msg.download()" style="float:right;"> 下载全部出错清单 </button>
+          <br><br>
+          <div class="err_msg" v-for="a_msg in err_msg.msg_list | limitBy 5">
+            {{a_msg}} 
+          </div>
         </div>
+        
     </div>
 
     <div id="cmd_area">
@@ -47,8 +53,9 @@
     step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
+    <button  @click="setStep(140)" > 140 </button> 
     <button  @click="setStep(180)" > 180 </button><br/>
-    <button  onClick="loadfile()" > loadfile </button><br/>
+    
     <br/>
     <br>
   </div>
@@ -120,15 +127,7 @@ init_100();
 
 console.log(vm.step_array);
 
-var loadfile = function(){
-  console.log( " 销售订单明细精简版.XLSX  开始读入。");
-  var order_info = xlsx.parse('data/销售订单明细精简版.xlsx'); 
-  console.log( " 销售订单明细精简版.XLSX  数据读入成功。");
 
-  console.log( " 物料清单.XLSX  开始读入。");
-  var prod_info = xlsx.parse("data/201511/物料清单.xlsx"); 
-  console.log( " 物料清单.XLSX  数据读入成功。");
-}
 
 
 var debug_flag = 0;

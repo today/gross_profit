@@ -68,8 +68,19 @@ nav {
     0px 2px 2px 0px RGBA(0, 0, 0, 0.24);
 }
 
+.err_area{
+    font-size: 1em;
+    color: white;
+    margin: 8px 5px;
+    padding: 8px;
+    background-color: #E04336;
+    box-shadow: 
+    0px 0px 2px 0px RGBA(0, 0, 0, 0.12),
+    0px 2px 2px 0px RGBA(0, 0, 0, 0.24);
+}
+
 .err_msg{
-	font-size: 1em;
+	font-size: 0.8em;
 	color: white;
     margin: 8px 5px;
     padding: 8px;
