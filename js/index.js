@@ -43,7 +43,7 @@ var check_status_120 = function(){
 
   // 程序运行所必须的数据源
   var srcFilelist = [];
-  srcFilelist.push( vm.base_dir + "1月销售明细.XLSX");
+  srcFilelist.push( vm.base_dir + "1月销售订单明细.XLSX");
   srcFilelist.push( vm.base_dir + "物料清单.XLSX");
   srcFilelist.push( vm.base_dir + "SCM客户明细.XLSX");
   //srcFilelist.push( vm.base_dir + "2015.11月计提并使用返利.XLSX");
@@ -81,7 +81,7 @@ var load_order_detail_140 = function(){
 
   var obj = null;
   
-  obj = xlsx.parse( vm.base_dir + "1月销售明细.xlsx"); // 读入xlsx文件
+  obj = xlsx.parse( vm.base_dir + "1月销售订单明细.xlsx"); // 读入xlsx文件
   
   // 取出第一个sheet
   ORDER_DETAIL = obj[0].data; 
@@ -90,7 +90,7 @@ var load_order_detail_140 = function(){
   trim_array_element(ORDER_DETAIL[0]); 
   console.log(ORDER_DETAIL[0]);
 
-  MSG.put( "销售订单明细数据读入成功。");
+  MSG.put( "1月销售订单明细   数据读入成功。");
 
   return true;;
 };
@@ -192,27 +192,23 @@ var copy_order_detail_150 = function(){
 // 第六步：补充数据到工作文件。
 // 成本价格取数的时候  应该使用“内控成本价格” 
 var fill_field_160 = function(){
-  
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   
-
   // 装入  [销售订单明细精简版.xlsx]
   var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版.xlsx");
   var order_info =  obj_sheet[0].data;
   MSG.put( " 销售订单明细精简版.XLSX  数据读入成功。");
   
-  // 装入  [物料清单.XLSX]
-  var obj_sheet2 = xlsx.parse( vm.base_dir + "物料清单.xlsx"); 
-  var prod_info = obj_sheet2[0].data;
-  MSG.put( " 物料清单.XLSX  数据读入成功。");
-  // 物料清单中编码为 1001000202013110  16位   
-  //   销售订单中  001001000202013110  18位
-  // 需清洗数据。   
+  var prod_info = getProd_info();
 
-  var title_array = order_info[0];
-  var index_prod_id = find_title_index(title_array, "物料号");
-  var index_order_date = find_title_index(title_array, "创建日期");
-  var index_cost = find_title_index(title_array, "内控成本价格");
+
+  // 销售订单表
+  var title_array_3 = order_info[0];
+  console.log( " 销售订单明细精简版.XLSX  数据读入成功。");
+  console.log(title_array_3);
+  var index_prod_id = find_title_index(title_array_3, "物料号");
+  var index_order_date = find_title_index(title_array_3, "创建日期");
+  var index_cost = find_title_index(title_array_3, "内控成本价格");
 
   // 因为要跳过title，所以下标从 1 开始。
   for(var i=1; i<order_info.length; i++){
@@ -229,7 +225,7 @@ var fill_field_160 = function(){
     //console.log(cost);
     
     if( undefined === cost ){
-      ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：" + (i+1) + " 物料号：" + prod_id_in_order );
+      ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料号：\t" + prod_id_in_order );
       a_order[index_cost] = -1;
     }else{
       // 成本 填入表格中。
@@ -441,6 +437,46 @@ var calc_group_190 = function(){
 };
 
 
+
+var getProd_info = function(){
+  // 装入  [物料清单.XLSX]
+  // 物料清单中编码为 1001000202013110  16位   
+  //   销售订单中  001001000202013110  18位
+  // 需清洗数据。
+  var obj_sheet2 = xlsx.parse( vm.base_dir + "物料清单.xlsx"); 
+  var prod_info = obj_sheet2[0].data;
+  MSG.put( " 物料清单.XLSX  数据读入成功。");
+
+  // 取出必要的列
+  var title_array = prod_info[0];
+  console.log( " 物料清单.xlsx  ");
+  console.log(title_array);
+  var index_must = [];
+  index_must.push( find_title_index(title_array, "物料号") );
+  index_must.push( find_title_index(title_array, "物料描述") );
+  index_must.push( find_title_index(title_array, "内控成本价格") );
+  var prod_must_col = select_col_from_array(prod_info, index_must);
+  
+  // 装入   内控成本价格变动--1月汇总.xlsx
+  var obj_sheet3 = xlsx.parse( vm.base_dir + "内控成本价格变动--1月汇总.xlsx"); 
+  var price_history = obj_sheet3[0].data;
+  MSG.put( " 内控成本价格变动--1月汇总.xlsx  数据读入成功。");
+  // 取出必要的列
+  var title_array_2 = price_history[0];
+  console.log( " 内控成本价格变动--1月汇总.xlsx  ");
+  console.log(title_array);
+  var index_must_2 = [];
+  index_must_2.push( find_title_index(title_array_2, "物料编码") );
+  index_must_2.push( find_title_index(title_array_2, "产品描述") );
+  index_must_2.push( find_title_index(title_array_2, "内控成本价格") );
+  index_must_2.push( find_title_index(title_array_2, "开始变动日期") );
+  var prod_history_col = select_col_from_array(price_history, index_must_2);
+
+  console.log(index_must);
+  console.log(index_must_2);
+  return prod_must_col;
+}
+
 var calc_branch_200 = function(){
   
   return true;
@@ -483,6 +519,10 @@ var getCost = function(prod_info, id, order_date){
   var prod_id = null;
   var id_a = id.trim();
 
+  // 处理成根据title找出index的模式。
+  var title_array = prod_info[0];
+  id_index = find_title_index(title_array, "物料号");
+
   for(var i=2; i<prod_info.length; i++){
 
     prod_id = prod_info[i][0];
@@ -491,7 +531,8 @@ var getCost = function(prod_info, id, order_date){
     }
 
     if( isblank(prod_id) ){
-      a_index = -1
+      a_index = -1;
+      console.log(id);
     }else{
       var id_b = prod_id.trim(); 
 
@@ -503,15 +544,12 @@ var getCost = function(prod_info, id, order_date){
     }
   }
 
-  // TOOD 要处理成根据title找出index的模式。
-  //var index_cost = find_title_index(prod_info[0], "内控成本价格");
-
   var cost = "";
   if( a_index < 0 ){
     console.log("Warning: index is -1.");
     cost = "";
   }else{
-    cost = prod_info[i][10];
+    cost = prod_info[i][id_index];
     //console.log("-----------------" + cost);
   }
   //console.log(cost);
