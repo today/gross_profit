@@ -33,3 +33,5 @@ js/vue.js
 *.xlsx
 
 data/
+
+.DS_Store
