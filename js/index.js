@@ -3,8 +3,6 @@
  * (c) 2015 Jin Tian
  * Released under the GPL License.
  */
-
-var fs = require('fs');
 var xlsx = require("node-xlsx");
 
 var ORDER_DETAIL = null;
@@ -39,15 +37,28 @@ var check_env_110 = function(){
 
 var check_status_120 = function(){
   
+  if(fs.existsSync(vm.sales_filename)) {
+    console.log('销售记录文件存在');
+    return true;
+  } else {
+    console.log('销售记录文件不存在');
+    return false;
+  }
+  
+};
+
+var check_src_130 = function(){
   var run_flag = true;
 
-  // 数据源文件标志关键字
+
+
+  // 充当数据源的文件 的文件名 的关键字
   var src_files_flag = [];
   src_files_flag.push("销售订单明细");
   src_files_flag.push("物料清单");
   src_files_flag.push("SCM客户明细");
 
-  
+
   // 程序运行所必须的数据源
   var srcFilelist = find_src_file(vm.base_dir, src_files_flag);
   // srcFilelist.push( vm.base_dir + "1月销售订单明细.XLSX");
@@ -75,10 +86,6 @@ var check_status_120 = function(){
     return false;
   }
 
-  return "";
-};
-
-var check_src_130 = function(){
   return true;;
 };
 

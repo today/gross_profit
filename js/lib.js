@@ -4,6 +4,7 @@
  * Released under the GPL License.
  */
 var _ = require('underscore');
+var fs = require('fs');
 
 var Msg = {
   createNew: function(){
@@ -38,6 +39,13 @@ var Msg = {
     return msg;
   }
 };
+
+
+// 根据关键词，寻找文件名匹配的目标文件。
+function find_src_file( base_dir, files_flag ){
+  var dest_files = [];
+
+}
 
 /*
  从二维数组中删除指定的列 
