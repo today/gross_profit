@@ -41,11 +41,18 @@ var check_status_120 = function(){
   
   var run_flag = true;
 
+  // 数据源文件标志关键字
+  var src_files_flag = [];
+  src_files_flag.push("销售订单明细");
+  src_files_flag.push("物料清单");
+  src_files_flag.push("SCM客户明细");
+
+  
   // 程序运行所必须的数据源
-  var srcFilelist = [];
-  srcFilelist.push( vm.base_dir + "1月销售订单明细.XLSX");
-  srcFilelist.push( vm.base_dir + "物料清单.XLSX");
-  srcFilelist.push( vm.base_dir + "SCM客户明细.XLSX");
+  var srcFilelist = find_src_file(vm.base_dir, src_files_flag);
+  // srcFilelist.push( vm.base_dir + "1月销售订单明细.XLSX");
+  // srcFilelist.push( vm.base_dir + "物料清单.XLSX");
+  // srcFilelist.push( vm.base_dir + "SCM客户明细.XLSX");
   //srcFilelist.push( vm.base_dir + "2015.11月计提并使用返利.XLSX");
   //srcFilelist.push( vm.base_dir + "2015.12促销品领用出库明细.XLSX");
   
@@ -114,6 +121,8 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("物料号"));
   must_col_title.push(make_title("物料组"));
   must_col_title.push(make_title("物料组描述"));
+  must_col_title.push(make_title("物料组描述"));
+  must_col_title.push(make_title("库存地点"));
   must_col_title.push(make_title("实际交货日期"));
   must_col_title.push(make_title("城市"));
   must_col_title.push(make_title("客户参考号"));
@@ -490,7 +499,24 @@ var getProd_info = function(){
   return prod_must_col;
 }
 
-var calc_branch_200 = function(){
+var fill_branch_200 = function(){
+  MSG.put( "数据较多，载入和计算约需15秒。请耐心等待。");
+
+  // 装入  [销售订单明细精简版.xlsx]
+  var obj_sheet = xlsx.parse( vm.base_dir + "销售毛利.xlsx");
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 销售毛利.xlsx  数据读入成功。");
+
+  
+  return true;
+};
+
+var fill_city_210 = function(){
+  
+  return true;
+};
+
+var calc_branch_city_220 = function(){
   
   return true;
 };

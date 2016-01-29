@@ -37,7 +37,9 @@
     </div>
 
     <div id="cmd_area">
-      工作目录：
+      请选择要计算的销售订单明细：<br>
+      <input type="file" value="./file/"> <br><br>
+      
       <div v-for="a_step in step_array">
         <span v-if="step>=a_step.idx">
         {{a_step.desc}} 
@@ -66,7 +68,7 @@
 
 
 var MSG = Msg.createNew();
-var ERR_MSG = Msg.createNew(); 
+var ERR_MSG = Msg.createNew();
 
 var vm = new Vue({
   el: '#app',
@@ -76,7 +78,8 @@ var vm = new Vue({
     step_array:[],
     run_msg: MSG,
     err_msg: ERR_MSG,
-    base_dir: "data/201601/"
+    base_dir: "data/201601/",
+    src_files: {}
   },
   methods: {
     do_proc: function(a_step){
@@ -84,6 +87,7 @@ var vm = new Vue({
       var func = a_step.func;
       var desc = a_step.desc;
       console.log("Run step, index:" + index + " desc: " + desc);
+      MSG.put( "开始执行：" + desc + "。 数据较多，载入和计算约需15秒。请耐心等待。");
 
       vm.step = index+1;
 
@@ -122,12 +126,12 @@ vm.step_array.push( make_step( 160, "第六步：补充数据到工作文件。"
 vm.step_array.push( make_step( 170, "第七步：计算订单毛利。", calc_gross_170, 180 ) );
 vm.step_array.push( make_step( 180, "第八步：加总物料毛利。", calc_prod_180, 190 ) );
 vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc_group_190, 200 ) );
-vm.step_array.push( make_step( 200, "第十步：计算渠道毛利。正在建设中。", calc_branch_200, 200 ) );
+vm.step_array.push( make_step( 200, "第十步：填充渠道信息。", fill_branch_200, 210 ) );
+vm.step_array.push( make_step( 210, "第十一步：填充地市信息。正在建设中。", fill_city_210, 220 ) );
+vm.step_array.push( make_step( 220, "第十二步：计算地市渠道毛利。正在建设中。", calc_branch_city_220, 230 ) );
+
 init_100();
-
 console.log(vm.step_array);
-
-
 
 
 var debug_flag = 0;
