@@ -13,6 +13,14 @@ body {
     color: #fff;
 }
 
+input {
+    font-size: 1em;
+    background: #FFEB3B;
+    border-radius: 2px;
+    padding: 8px 26px;
+    border: 0;
+}
+
 button {
 	font-size: 1em;
     background: #FFEB3B;
