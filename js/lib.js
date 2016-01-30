@@ -5,6 +5,7 @@
  */
 var _ = require('underscore');
 var fs = require('fs');
+var path = require('path');
 
 var Msg = {
   createNew: function(){
@@ -45,6 +46,24 @@ var Msg = {
 function find_src_file( base_dir, files_flag ){
   var dest_files = [];
 
+  if(fs.existsSync(base_dir)) {
+    console.log('base_dir 存在');
+
+    var all_file = fs.readdirSync(base_dir);
+    for(var i=0; i<files_flag.length; i++){
+      var key=files_flag[i];
+      var file_name = _.findWhere(all_file, key);
+      dest_files[key] = file_name;
+      
+    }
+    
+
+  } else {
+    console.log('base_dir 不存在');
+    return null;
+  }
+  console.log(dest_files);
+  return dest_files;
 }
 
 /*
