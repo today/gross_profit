@@ -50,14 +50,18 @@ function find_src_file( base_dir, files_flag ){
     console.log('base_dir 存在');
 
     var all_file = fs.readdirSync(base_dir);
+
     for(var i=0; i<files_flag.length; i++){
       var key=files_flag[i];
-      var file_name = _.findWhere(all_file, key);
-      dest_files[key] = file_name;
-      
-    }
-    
+      var file_name = undefined;
 
+      for(var j=0; j<all_file.length; j++){
+        if( all_file[j].indexOf(key) > -1 ){
+          var file_name = all_file[j];
+        }
+      }
+      dest_files[key] = file_name;
+    }
   } else {
     console.log('base_dir 不存在');
     return null;

@@ -16,9 +16,17 @@ if(fs.existsSync(path)) {
   console.log('base_dir 存在');
 
   var all_file = fs.readdirSync(path);
+  console.log(all_file);
   for(var i=0; i<src_files_flag.length; i++){
     var key=src_files_flag[i];
-    var file_name = _.findWhere(all_file, key);
+    var file_name = undefined;
+
+    for(var j=0; j<all_file.length; j++){
+      if( all_file[j].indexOf(key) > -1 ){
+        var file_name = all_file[j];
+      }
+    }
+
     dest_files[key] = file_name;
   }
   console.log(dest_files);
