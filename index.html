@@ -24,7 +24,7 @@
         </div>
         <div class="err_area" v-show="err_msg.msg_count>0" >
           数据出错。发现错误：{{err_msg.msg_count}} 个。
-          显示前 5 个。 
+          显示最新的 5 个。 
           <br><br><button @click="err_msg.download()" style="float:right;"> 下载全部出错清单 </button>
           <br><br>
           <div class="err_msg" v-for="a_msg in err_msg.msg_list | limitBy 5">
