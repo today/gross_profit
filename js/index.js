@@ -35,58 +35,50 @@ var check_env_110 = function(){
   return true;
 };
 
-var check_status_120 = function(){
+var select_file_120 = function(){
   
   if(fs.existsSync(vm.sales_filename)) {
     console.log('销售记录文件存在');
-    return true;
+    
   } else {
     console.log('销售记录文件不存在');
-    return false;
+    document.getElementById("file_src").click();
   }
-  
+  return true;
 };
 
 var check_src_130 = function(){
   var run_flag = true;
 
-
+  // 设置base_dir
+  var temp_path = document.getElementById("file_src").value;
+  vm.base_dir = path.dirname(temp_path ) + "/";
+  console.log("base_dir: " + vm.base_dir );
 
   // 充当数据源的文件 的文件名 的关键字
   var src_files_flag = [];
   src_files_flag.push("销售订单明细");
   src_files_flag.push("物料清单");
   src_files_flag.push("SCM客户明细");
-
+  src_files_flag.push("内控成本价格变动");
+  src_files_flag.push("xxxxxxx");
 
   // 程序运行所必须的数据源
-  var srcFilelist = find_src_file(vm.base_dir, src_files_flag);
-  // srcFilelist.push( vm.base_dir + "1月销售订单明细.XLSX");
-  // srcFilelist.push( vm.base_dir + "物料清单.XLSX");
-  // srcFilelist.push( vm.base_dir + "SCM客户明细.XLSX");
+  vm.src_files = find_src_file(vm.base_dir, src_files_flag);
   //srcFilelist.push( vm.base_dir + "2015.11月计提并使用返利.XLSX");
   //srcFilelist.push( vm.base_dir + "2015.12促销品领用出库明细.XLSX");
   
+  console.log( vm.src_files);
 
-  for( var i=0;i<srcFilelist.length;i++ ){
-    var filename = srcFilelist[i];
-    if(fs.existsSync("" + filename)){
-      MSG.put( "必要文件：" + filename + " 存在，程序可以继续工作。");
-      run_flag = true;
-    }else{
-      ERR_MSG.put( "必要文件： " + filename + " 不存在，程序无法继续工作。");
+  for( temp_name in vm.src_files){
+    if( undefined === vm.src_files[temp_name]){
+      ERR_MSG.put( "输入文件不全。缺少：" + temp_name );
       run_flag = false;
-      break;
     }
   }
 
-  if( run_flag ){
-    return true;
-  }else{
-    return false;
-  }
 
-  return true;;
+  return run_flag;;
 };
 
 var load_order_detail_140 = function(){
