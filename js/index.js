@@ -61,7 +61,7 @@ var check_src_130 = function(){
   src_files_flag.push("物料清单");
   src_files_flag.push("SCM客户明细");
   src_files_flag.push("内控成本价格变动");
-  src_files_flag.push("xxxxxxx");
+  //src_files_flag.push("xxxxxxx");
 
   // 程序运行所必须的数据源
   vm.src_files = find_src_file(vm.base_dir, src_files_flag);
@@ -87,7 +87,7 @@ var load_order_detail_140 = function(){
 
   var obj = null;
   
-  obj = xlsx.parse( vm.base_dir + "1月销售订单明细.xlsx"); // 读入xlsx文件
+  obj = xlsx.parse( vm.base_dir + vm.src_files['销售订单明细'] ); // 读入xlsx文件
   
   // 取出第一个sheet
   ORDER_DETAIL = obj[0].data; 
@@ -96,7 +96,7 @@ var load_order_detail_140 = function(){
   trim_array_element(ORDER_DETAIL[0]); 
   console.log(ORDER_DETAIL[0]);
 
-  MSG.put( "1月销售订单明细   数据读入成功。");
+  MSG.put( "销售订单明细   数据读入成功。");
 
   return true;;
 };
@@ -187,11 +187,8 @@ var copy_order_detail_150 = function(){
     }
   }
 
-
-  //console.log(ORDER_DETAIL_SMALL);
-
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
-  fs.writeFileSync( vm.base_dir + "销售订单明细精简版.xlsx", buffer);
+  fs.writeFileSync( vm.base_dir + "中间文件_销售数据.xlsx", buffer);
 
   
   return true;;
@@ -202,17 +199,17 @@ var copy_order_detail_150 = function(){
 var fill_field_160 = function(){
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   
-  // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版.xlsx");
+  // 装入  [销售订单明细]
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据.xlsx");
   var order_info =  obj_sheet[0].data;
-  MSG.put( " 销售订单明细精简版.XLSX  数据读入成功。");
+  MSG.put( " 中间文件_销售数据.XLSX  数据读入成功。");
   
+  // 获得物料数据。
   var prod_info = getProd_info();
 
 
   // 销售订单表
   var title_array_3 = order_info[0];
-  console.log( " 销售订单明细精简版.XLSX  数据读入成功。");
   console.log(title_array_3);
   var index_prod_id = find_title_index(title_array_3, "物料号");
   var index_order_date = find_title_index(title_array_3, "创建日期");
@@ -243,8 +240,8 @@ var fill_field_160 = function(){
 
   }
 
-  var buffer = xlsx.build([{name: "销售订单明细(包含成本价)", data: order_info}]);
-  fs.writeFileSync(  vm.base_dir + "销售订单明细精简版(包含成本价).xlsx", buffer);
+  var buffer = xlsx.build([{name: "中间文件_销售数据(包含成本价)", data: order_info}]);
+  fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(包含成本价).xlsx", buffer);
 
   return true;
 };
@@ -259,10 +256,9 @@ var calc_gross_170 = function(){
   
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
-  // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "销售订单明细精简版(包含成本价).xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(包含成本价).xlsx");
   var order_info =  obj_sheet[0].data;
-  MSG.put( " 销售订单明细精简版(包含成本价).xlsx  数据读入成功。");
+  MSG.put( " 中间文件_销售数据(包含成本价).xlsx  数据读入成功。");
 
   var title_array = order_info[0];
   var index_price = find_title_index(title_array, "销售价格");
@@ -294,8 +290,8 @@ var calc_gross_170 = function(){
 
   }
 
-  var buffer = xlsx.build([{name: "销售毛利", data: order_info}]);
-  fs.writeFileSync(  vm.base_dir + "销售毛利.xlsx", buffer);
+  var buffer = xlsx.build([{name: "计算结果_销售毛利", data: order_info}]);
+  fs.writeFileSync(  vm.base_dir + "计算结果_销售毛利.xlsx", buffer);
 
   return true;;
 };
@@ -305,10 +301,9 @@ var calc_prod_180 = function(){
   
   MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
-  // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "销售毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
-  MSG.put( " 销售毛利.xlsx  数据读入成功。");
+  MSG.put( " 计算结果_销售毛利.xlsx  数据读入成功。");
 
   // 获取title
   var title_array = gross_info[0];
@@ -373,8 +368,8 @@ var calc_prod_180 = function(){
   var thin_gross = del_col_from_array(prod_gross, index_will_delete);
 
 
-  var buffer = xlsx.build([{name: "物料毛利", data: thin_gross}]);
-  fs.writeFileSync(  vm.base_dir + "物料毛利.xlsx", buffer);
+  var buffer = xlsx.build([{name: "计算结果_物料毛利", data: thin_gross}]);
+  fs.writeFileSync(  vm.base_dir + "计算结果_物料毛利.xlsx", buffer);
 
   return true;
 };
@@ -384,10 +379,9 @@ var calc_group_190 = function(){
   
   MSG.put( "数据较多，载入约需5秒。请耐心等待。");
 
-  // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "物料毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_物料毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
-  MSG.put( " 物料毛利.xlsx  数据读入成功。");
+  MSG.put( " 计算结果_物料毛利.xlsx  数据读入成功。");
 
   var title_array = gross_info[0];
   // 结果数组增加字段
@@ -440,8 +434,8 @@ var calc_group_190 = function(){
   // 清除不需要的列
   var thin_gross = del_col_from_array(group_gross_sum, index_will_delete);
 
-  var buffer = xlsx.build([{name: "物料组毛利", data: thin_gross}]);
-  fs.writeFileSync(  vm.base_dir + "物料组毛利.xlsx", buffer);
+  var buffer = xlsx.build([{name: "计算结果_物料组毛利", data: thin_gross}]);
+  fs.writeFileSync(  vm.base_dir + "计算结果_物料组毛利.xlsx", buffer);
 
   return true;
 };
@@ -453,9 +447,9 @@ var getProd_info = function(){
   // 物料清单中编码为 1001000202013110  16位   
   //   销售订单中  001001000202013110  18位
   // 需清洗数据。
-  var obj_sheet2 = xlsx.parse( vm.base_dir + "物料清单.xlsx"); 
+  var obj_sheet2 = xlsx.parse( vm.base_dir + vm.src_files['物料清单']); 
   var prod_info = obj_sheet2[0].data;
-  MSG.put( " 物料清单.XLSX  数据读入成功。");
+  MSG.put( " 物料清单  数据读入成功。");
 
   for(var i=1; i<prod_info.length; i++){
     prod_info[i].push(40000);
@@ -465,7 +459,6 @@ var getProd_info = function(){
   var title_array = prod_info[0];
   title_array.push("开始变动日期")
 
-  console.log( " 物料清单.xlsx  ");
   console.log(title_array);
   var index_must = [];
   index_must.push( find_title_index(title_array, "物料号") );
@@ -475,9 +468,9 @@ var getProd_info = function(){
   var prod_must_col = select_col_from_array(prod_info, index_must);
   
   // 装入   内控成本价格变动--1月汇总.xlsx
-  var obj_sheet3 = xlsx.parse( vm.base_dir + "内控成本价格变动--1月汇总.xlsx"); 
+  var obj_sheet3 = xlsx.parse( vm.base_dir + vm.src_files['内控成本价格变动']); 
   var price_history = obj_sheet3[0].data;
-  MSG.put( " 内控成本价格变动--1月汇总.xlsx  数据读入成功。");
+  MSG.put( " 内控成本价格变动  数据读入成功。");
   // 取出必要的列
   var title_array_2 = price_history[0];
 
@@ -501,10 +494,9 @@ var getProd_info = function(){
 var fill_branch_200 = function(){
   MSG.put( "数据较多，载入和计算约需15秒。请耐心等待。");
 
-  // 装入  [销售订单明细精简版.xlsx]
-  var obj_sheet = xlsx.parse( vm.base_dir + "销售毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
-  MSG.put( " 销售毛利.xlsx  数据读入成功。");
+  MSG.put( " 中间文件_销售毛利.xlsx  数据读入成功。");
 
   
   return true;
