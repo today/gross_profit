@@ -13,15 +13,17 @@ var init_100 = function(){
 
   MSG.put("系统启动。");
 
-  setInterval(function() {
+  // setInterval(function() {
     
-    var max_count = 15;
-    var count = vm.run_msg.length;
-    if( count > max_count ){
-      console.log(count-max_count);
-      //vm.run_msg = _.rest(vm.run_msg);
-    }
-  }, 3000);
+  //   var max_count = 15;
+  //   var m_list = vm.run_msg.msg_list;
+  //   var count = m_list.length;
+  //   if( count > max_count ){
+  //     m_list.length = max_count;
+  //     //m_list = _.rest(m_list);
+  //     console.log(m_list.length);
+  //   }
+  // }, 1000);
 }
 
 var check_env_110 = function(){

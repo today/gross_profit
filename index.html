@@ -19,7 +19,7 @@
   <div class="now"></div>
   <div class="main-frame">
     <div id="msg_area">
-        <div v-for="a_msg in run_msg.msg_list">
+        <div v-for="(index, a_msg) in run_msg.msg_list | limitBy 12">
           {{a_msg}} 
         </div>
         <div class="err_area" v-show="err_msg.msg_count>0" >
