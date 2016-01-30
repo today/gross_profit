@@ -19,7 +19,7 @@
   <div class="now"></div>
   <div class="main-frame">
     <div id="msg_area">
-        <div v-for="(index, a_msg) in run_msg.msg_list | limitBy 12">
+        <div v-for=" a_msg in run_msg.msg_list | limitBy 12">
           {{a_msg}} 
         </div>
         <div class="err_area" v-show="err_msg.msg_count>0" >
@@ -37,6 +37,10 @@
     <div id="cmd_area">
       请选择要计算的销售订单明细：<br>
       <input type="file" id="file_src" > <br><br>
+      <div v-for=" a_file in src_files_flag">
+          {{a_file}} : {{ src_files[a_file] }}
+      </div>
+      <br><br>
 
       <div v-for="a_step in step_array">
         <span v-if="step>=a_step.idx">
@@ -76,7 +80,8 @@ var vm = new Vue({
     run_msg: MSG,
     err_msg: ERR_MSG,
     base_dir: "data/201601/",
-    src_files: {}
+    src_files_flag: [],
+    src_files: []
   },
   methods: {
     do_proc: function(a_step){

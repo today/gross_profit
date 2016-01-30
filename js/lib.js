@@ -67,7 +67,7 @@ function find_src_file( base_dir, files_flag ){
     console.log('base_dir 不存在');
     return null;
   }
-  console.log(dest_files);
+  //console.log(dest_files);
   return dest_files;
 }
 

@@ -58,15 +58,14 @@ var check_src_130 = function(){
   console.log("base_dir: " + vm.base_dir );
 
   // 充当数据源的文件 的文件名 的关键字
-  var src_files_flag = [];
-  src_files_flag.push("销售订单明细");
-  src_files_flag.push("物料清单");
-  src_files_flag.push("SCM客户明细");
-  src_files_flag.push("内控成本价格变动");
-  //src_files_flag.push("xxxxxxx");
+  vm.src_files_flag.push("销售订单明细");
+  vm.src_files_flag.push("物料清单");
+  vm.src_files_flag.push("SCM客户明细");
+  vm.src_files_flag.push("内控成本价格变动");
+  //vm.src_files_flag.push("xxxxxxx");
 
   // 程序运行所必须的数据源
-  vm.src_files = find_src_file(vm.base_dir, src_files_flag);
+  vm.src_files = find_src_file(vm.base_dir, vm.src_files_flag);
   //srcFilelist.push( vm.base_dir + "2015.11月计提并使用返利.XLSX");
   //srcFilelist.push( vm.base_dir + "2015.12促销品领用出库明细.XLSX");
   
