@@ -5,9 +5,7 @@
   <title>陕西终端公司毛利分析</title>
   
   <link rel="stylesheet" href="css/app.css">
-  <style type="text/css">
-
-  </style>
+  <style type="text/css"></style>
   
   <script type="text/javascript" src="js/vue.js"></script>
   <script type="text/javascript" src="js/lib.js"></script>
@@ -25,8 +23,8 @@
           {{a_msg}} 
         </div>
         <div class="err_area" v-show="err_msg.msg_count>0" >
-          数据出错。错误数据：{{err_msg.msg_count}} 个。
-          只显示前 5 个。 
+          数据出错。发现错误：{{err_msg.msg_count}} 个。
+          显示前 5 个。 
           <br><br><button @click="err_msg.download()" style="float:right;"> 下载全部出错清单 </button>
           <br><br>
           <div class="err_msg" v-for="a_msg in err_msg.msg_list | limitBy 5">
@@ -38,7 +36,7 @@
 
     <div id="cmd_area">
       请选择要计算的销售订单明细：<br>
-      <input type="file" v-model="sales_filename"> <br><br>
+      <input type="file" id="file_src" > <br><br>
 
       <div v-for="a_step in step_array">
         <span v-if="step>=a_step.idx">
@@ -66,7 +64,6 @@
 
 <script type="text/javascript">
 
-
 var MSG = Msg.createNew();
 var ERR_MSG = Msg.createNew();
 
@@ -79,7 +76,6 @@ var vm = new Vue({
     run_msg: MSG,
     err_msg: ERR_MSG,
     base_dir: "data/201601/",
-    sales_filename: "",
     src_files: {}
   },
   methods: {
@@ -119,7 +115,7 @@ var make_step = function( i_index, s_desc, f_func_name, next ){
 };
 
 vm.step_array.push( make_step( 110, "第一步：检查环境。", check_env_110, 120 ) );
-vm.step_array.push( make_step( 120, "第二步：检查状态。", check_status_120 , 130) );
+vm.step_array.push( make_step( 120, "第二步：选择销售订单明细文件。", select_file_120 , 130) );
 vm.step_array.push( make_step( 130, "第三步：检查输入文件是否齐备。", check_src_130, 140 ) );
 vm.step_array.push( make_step( 140, "第四步：读入销售订单明细，并检查内容。", load_order_detail_140, 150 ) );
 vm.step_array.push( make_step( 150, "第五步：筛选数据到工作文件。", copy_order_detail_150, 160 ) );
