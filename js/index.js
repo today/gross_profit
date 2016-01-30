@@ -176,15 +176,22 @@ var copy_order_detail_150 = function(){
     //console.log(i);
   }
 
-  // 进行数据清洗，物料号，把18位的编码缩减到16位。
+  // 进行数据清洗，物料号，把18位的编码缩减到16位。客户编码，删除前面的两个零。
   var prod_id_index = find_title_index(must_col_title, "物料号");
+  var custom_id_index = find_title_index(must_col_title, "客户");
   for(var i=1;i<ORDER_DETAIL_SMALL.length; i++){
     var prod_id_temp = ORDER_DETAIL_SMALL[i][prod_id_index];
+    var custom_id_temp = ORDER_DETAIL_SMALL[i][custom_id_index];
+
     if( 18 === prod_id_temp.length ){
       ORDER_DETAIL_SMALL[i][prod_id_index] = prod_id_temp.substring(2);
+      ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
     }else{
       ERR_MSG.put("数据出错：订单表中的物料号长度不是20。行数：" + i + " 物料号：" + prod_id_temp );
     }
+
+    ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
+    
   }
 
   var buffer = xlsx.build([{name: "销售订单明细", data: ORDER_DETAIL_SMALL}]);
@@ -494,11 +501,81 @@ var getProd_info = function(){
 var fill_branch_200 = function(){
   MSG.put( "数据较多，载入和计算约需15秒。请耐心等待。");
 
-  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
-  MSG.put( " 中间文件_销售毛利.xlsx  数据读入成功。");
+  MSG.put( " 计算结果_销售毛利.xlsx  数据读入成功。");
 
+  // 取出必要的列
+  var title_array = gross_info[0];
+  title_array.push("渠道归属")
+  console.log(title_array);
+
+  var index_custom_id = find_title_index(title_array, "客户");
+  var index_warehouse_id = find_title_index(title_array, "库存地点");
+  var index_branch = find_title_index(title_array, "渠道归属");
   
+  // 第一步，筛选出仓库（表头为：库存地点）是 P012 的，全部是电子渠道。
+  // 第二步，仓库是 P001~P011 ，并且客户编码(表头为：客户)是 001 开头，是自有渠道。
+  // 第三步，仓库是 1010  开头，并且客户编码 002 开头，是零售渠道。
+  // 第四步，仓库是 任意 , 客户编码是 8 开头，是分销渠道。
+  // 第五步，如果仍然有剩余数据，报错。
+  // 注：客户编码也需要做数据清洗，已经在前面做了。
+  var temp_array = [];
+  for(var i=1; i<gross_info.length; i++){
+    var temp_order = gross_info[i];
+    var temp_id = temp_order[index_warehouse_id];
+    if( 'P012' === temp_id.substring(0,4) ){
+      temp_order[index_branch] = '电子渠道';
+    }else{
+      temp_array.push(temp_order);
+    }
+  }
+
+  var temp_array2 = [];
+  for(var i=1; i<temp_array.length; i++){
+    var temp_order = temp_array[i];
+    var temp_id = temp_order[index_warehouse_id];
+    var custom_id = temp_order[index_custom_id];
+    if( 'P0' === temp_id.substring(0,2) && '001'===custom_id.substring(0,3) ){
+      temp_order[index_branch] = '自有渠道';
+    }else{
+      temp_array2.push(temp_order);
+    }
+  }
+
+  var temp_array3 = [];
+  for(var i=1; i<temp_array2.length; i++){
+    var temp_order = temp_array2[i];
+    var temp_id = temp_order[index_warehouse_id];
+    var custom_id = temp_order[index_custom_id];
+    if( '1010' === temp_id.substring(0,4) && '002'===custom_id.substring(0,3) ){
+      temp_order[index_branch] = '零售渠道';
+    }else{
+      temp_array3.push(temp_order);
+    }
+  }
+
+  var temp_array4 = [];
+  for(var i=1; i<temp_array3.length; i++){
+    var temp_order = temp_array3[i];
+    var temp_id = temp_order[index_warehouse_id];
+    var custom_id = temp_order[index_custom_id];
+    if( '8'===custom_id.substring(0,1) ){
+      temp_order[index_branch] = '分销渠道';
+    }else{
+      temp_array4.push(temp_order);
+    }
+  }
+
+  if( temp_array4.length > 0 ){
+    console.log("数据出错：发现无渠道归属的订单。");
+    console.log(temp_array4);
+  }
+
+  var buffer = xlsx.build([{name: "中间文件_销售数据(渠道归属)", data: gross_info}]);
+  fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属).xlsx", buffer);
+
+
   return true;
 };
 
