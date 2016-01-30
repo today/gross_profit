@@ -14,8 +14,8 @@ var Msg = {
     msg.msg_count = 0;
 
     msg.put = function(a_msg){ 
-      //msg.msg_list.push("log " + msg.msg_list.length + ":" + a_msg); 
-      msg.msg_list.push( a_msg ); 
+      msg.msg_list.push("log " + msg.msg_list.length + ": " + a_msg); 
+      //msg.msg_list.push( a_msg ); 
       msg.msg_count++;
     };
 
