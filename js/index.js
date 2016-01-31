@@ -8,22 +8,10 @@ var xlsx = require("node-xlsx");
 var ORDER_DETAIL = null;
 var TAX_RATE = 1.17 ;
 
-
 var init_100 = function(){
 
   MSG.put("系统启动。");
 
-  // setInterval(function() {
-    
-  //   var max_count = 15;
-  //   var m_list = vm.run_msg.msg_list;
-  //   var count = m_list.length;
-  //   if( count > max_count ){
-  //     m_list.length = max_count;
-  //     //m_list = _.rest(m_list);
-  //     console.log(m_list.length);
-  //   }
-  // }, 1000);
 }
 
 var check_env_110 = function(){
@@ -83,8 +71,6 @@ var check_src_130 = function(){
 };
 
 var load_order_detail_140 = function(){
-  
-  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   var obj = null;
   
@@ -105,8 +91,6 @@ var load_order_detail_140 = function(){
 
 
 var copy_order_detail_150 = function(){
-
-  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   
   var must_col_title = [];
   must_col_title.push(make_title("实际交货数量"));
@@ -205,7 +189,6 @@ var copy_order_detail_150 = function(){
 // 第六步：补充数据到工作文件。
 // 成本价格取数的时候  应该使用“内控成本价格” 
 var fill_field_160 = function(){
-  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
   
   // 装入  [销售订单明细]
   var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据.xlsx");
@@ -261,8 +244,6 @@ var fill_field_160 = function(){
 本步骤中，只计算  (销售价格-成本单价)*交货数量/1.17
 */
 var calc_gross_170 = function(){
-  
-  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
 
   var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(包含成本价).xlsx");
   var order_info =  obj_sheet[0].data;
@@ -307,8 +288,6 @@ var calc_gross_170 = function(){
 // 第六步：加总物料毛利。
 var calc_prod_180 = function(){
   
-  MSG.put( "数据较多，载入约需15秒。请耐心等待。");
-
   var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 计算结果_销售毛利.xlsx  数据读入成功。");
@@ -500,7 +479,6 @@ var getProd_info = function(){
 }
 
 var fill_branch_200 = function(){
-  MSG.put( "数据较多，载入和计算约需15秒。请耐心等待。");
 
   var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
   var gross_info =  obj_sheet[0].data;
@@ -570,10 +548,10 @@ var fill_branch_200 = function(){
 
   if( temp_array4.length > 0 ){
     console.log("数据出错：发现无渠道归属的订单。");
-    console.log(temp_array4);
+    //console.log(temp_array4);
   }
 
-  var buffer = xlsx.build([{name: "中间文件_销售数据(渠道归属)", data: gross_info}]);
+  var buffer = xlsx.build([{name: "销售数据(渠道归属)", data: gross_info}]);
   fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属).xlsx", buffer);
 
 
@@ -581,6 +559,33 @@ var fill_branch_200 = function(){
 };
 
 var fill_city_210 = function(){
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(渠道归属).xlsx");
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 中间文件_销售数据(渠道归属).xlsx  数据读入成功。");
+
+  // 取出必要的列
+  var title_array = gross_info[0];
+  title_array.push("地市归属")
+  console.log(title_array);
+  var index_custom_id = find_title_index(title_array, "客户");
+  var index_city = find_title_index(title_array, "地市归属");
+  
+
+  var obj_sheet2 = xlsx.parse( vm.base_dir + vm.src_files['SCM客户明细']);
+  var custom_info =  obj_sheet2[0].data;
+  MSG.put( " SCM客户明细  数据读入成功。");
+
+  for(var i=1; i<gross_info.length; i++ ){
+    var order = gross_info[i];
+    var city = getCity(custom_info, order[index_custom_id]);
+    //console.log(city);
+    order[index_city] = city;
+
+    //if(i>10)break;
+  }
+
+  var buffer = xlsx.build([{name: "销售数据(渠道归属和地市归属)", data: gross_info}]);
+  fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx", buffer);
   
   return true;
 };
@@ -621,6 +626,57 @@ var find_title_index = function( title_array, t_name){
   return a_index;
 };
 
+var getCity = function(custom_info, custom_id){
+
+  var title_array = custom_info[0];
+  //console.log(title_array);
+  custom_no_index = find_title_index(title_array, "客户");
+  city_index = find_title_index(title_array, "地市");
+  //console.log(custom_no_index);
+  //console.log(city_index);
+  var ret_city = null;
+
+  for(var i=1; i<custom_info.length; i++){
+    var custom = custom_info[i];
+    var no = custom[custom_no_index];
+    var city = custom[city_index];
+
+    //console.log(custom_id);
+    //console.log(no);
+    if( custom_id == no ){
+      if( city.indexOf("西安") > -1 ){
+        ret_city = "西安";
+      }else if( city.indexOf("咸阳") > -1 ){
+        ret_city = "咸阳";
+      }else if( city.indexOf("宝鸡") > -1 ){
+        ret_city = "宝鸡";
+      }else if( city.indexOf("渭南") > -1 ){
+        ret_city = "渭南";
+      }else if( city.indexOf("铜川") > -1 ){
+        ret_city = "铜川";
+      }else if( city.indexOf("延安") > -1 ){
+        ret_city = "延安";
+      }else if( city.indexOf("榆林") > -1 ){
+        ret_city = "榆林";
+      }else if( city.indexOf("汉中") > -1 ){
+        ret_city = "汉中";
+      }else if( city.indexOf("安康") > -1 ){
+        ret_city = "安康";
+      }else if( city.indexOf("商洛") > -1 ){
+        ret_city = "商洛";
+      }else if( city.indexOf("其他") > -1 ){
+        ret_city = "其他";
+      }else if( city.indexOf("零售中心") > -1 ){
+        ret_city = "零售中心";
+      }else{
+        ret_city = "出错";
+      }
+      break;
+    }
+  }
+  return ret_city;
+}
+
 var getCost = function(prod_info, id, order_date){
   //console.log(id);
   var temp_array = [];
@@ -628,7 +684,6 @@ var getCost = function(prod_info, id, order_date){
   var prod_id = null;
   var id_a = id.trim();
 
-  // 处理成根据title找出index的模式。
   var title_array = prod_info[0];
   id_index = find_title_index(title_array, "物料号");
   cost_index = find_title_index(title_array, "内控成本价格");
@@ -664,10 +719,10 @@ var getCost = function(prod_info, id, order_date){
   }
   else{
     // 先排序。
-    console.log("出现多个成本价，找日期最接近的那个。 order_date= " + order_date );
-    console.log(temp_array);
+    //console.log("出现多个成本价，找日期最接近的那个。 order_date= " + order_date );
+    //console.log(temp_array);
     temp_array = _.sortBy(temp_array, function(num){ return num[date_index]; });
-    console.log(temp_array);
+    //console.log(temp_array);
 
     var temp_date = 0;
     for(var i=1;i<temp_array.length; i++){
@@ -675,19 +730,19 @@ var getCost = function(prod_info, id, order_date){
       var c2 = temp_array[i];
       if( order_date >= c1[date_index] && order_date < c2[date_index] ){
         cost = temp_array[i-1][cost_index];
-        console.log("------------");
-        console.log(c1[date_index]);
-        console.log(order_date);
-        console.log(c2[date_index]);
-        console.log("------------");
+        // console.log("------------");
+        // console.log(c1[date_index]);
+        // console.log(order_date);
+        // console.log(c2[date_index]);
+        // console.log("------------");
         break;
       }
       else if( i === temp_array.length-1 && order_date > c2[date_index]){
         cost = temp_array[i][cost_index];
-        console.log("------------");
-        console.log(order_date);
-        console.log(c2[date_index]);
-        console.log("------------");
+        // console.log("------------");
+        // console.log(order_date);
+        // console.log(c2[date_index]);
+        // console.log("------------");
       }
     }
   }
