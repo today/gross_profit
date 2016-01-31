@@ -115,6 +115,7 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("内控成本价格"));
   //must_col_title.push(make_title("下游价返"));
   //must_col_title.push(make_title("促销费"));
+  must_col_title.push(make_title("销售收入"));
   must_col_title.push(make_title("毛利"));
   must_col_title.push(make_title("毛利率"));
 
@@ -122,8 +123,7 @@ var copy_order_detail_150 = function(){
   var title_array = ORDER_DETAIL[0];
   // 把附加字段添加到 title 行中。
   title_array.push("内控成本价格");
-  //title_array.push("下游价返");
-  //title_array.push("促销费");
+  title_array.push("销售收入");
   title_array.push("毛利");
   title_array.push("毛利率");
 
@@ -253,6 +253,7 @@ var calc_gross_170 = function(){
   var index_price = find_title_index(title_array, "销售价格");
   var index_delivery_count = find_title_index(title_array, "实际交货数量");
   var index_cost = find_title_index(title_array, "内控成本价格");
+  var index_income = find_title_index(title_array, "销售收入");
   var index_gross = find_title_index(title_array, "毛利");
   var index_gross_rate = find_title_index(title_array, "毛利率");
 
@@ -271,6 +272,7 @@ var calc_gross_170 = function(){
     else if( 0 < cost ){
       var cost_sum = cost * delivery_count;
       var income_sum = price * delivery_count
+      a_order[index_income] = income_sum;
       a_order[index_gross] = (income_sum - cost_sum) / TAX_RATE ;
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
@@ -300,6 +302,7 @@ var calc_prod_180 = function(){
   var index_count = find_title_index(title_array, "实际交货数量");
   var index_prod_id = find_title_index(title_array, "物料号");
   var index_prod_group_id = find_title_index(title_array, "物料组");
+  var index_income = find_title_index(title_array, "销售收入");
   var index_gross = find_title_index(title_array, "毛利");
   var index_gross_sum = find_title_index(title_array, "单物料毛利");
   
@@ -309,18 +312,20 @@ var calc_prod_180 = function(){
   for(var i=1; i<gross_info.length; i++){
     var a_order = gross_info[i];
 
-    var count = a_order[index_count];
     var prod_id = a_order[index_prod_id];
+    var count = a_order[index_count];
+    var income = a_order[index_income];
     var gross = a_order[index_gross];
-
     
     if( gross_sum[prod_id] ){
       // 单品汇总信息已经存在
       a_temp = gross_sum[prod_id];
-      // 累加毛利
-      a_temp[index_gross_sum] += gross;
       // 累加数量
       a_temp[index_count] += count;
+      // 累加收入
+      a_temp[index_income] += income;
+      // 累加毛利
+      a_temp[index_gross_sum] += gross;
     }
     else{
       // 单品汇总信息 尚未存在
@@ -377,6 +382,7 @@ var calc_group_190 = function(){
   var index_count = find_title_index(title_array, "实际交货数量");
   var index_prod_group_id = find_title_index(title_array, "物料组");
   var index_gross = find_title_index(title_array, "单物料毛利");
+  var index_income = find_title_index(title_array, "销售收入");
   var index_group_gross = find_title_index(title_array, "物料组毛利");
 
   var group_sum = [];
@@ -386,15 +392,18 @@ var calc_group_190 = function(){
 
     var count = a_prod_gross[index_count];
     var group_id = a_prod_gross[index_prod_group_id];
+    var income = a_prod_gross[index_income];
     var gross = a_prod_gross[index_gross];
 
     if( group_sum[group_id] ){
       // 单品汇总信息已经存在
       a_temp = group_sum[group_id];
-      // 累加毛利
-      a_temp[index_group_gross] += gross;
       // 累加数量
       a_temp[index_count] += count;
+      // 累加收入
+      a_temp[index_income] += income;
+      // 累加毛利
+      a_temp[index_group_gross] += gross;
     }
     else{
       // 单品汇总信息 尚未存在
@@ -565,7 +574,7 @@ var fill_city_210 = function(){
 
   // 取出必要的列
   var title_array = gross_info[0];
-  title_array.push("地市归属")
+  title_array.push("地市归属");
   console.log(title_array);
   var index_custom_id = find_title_index(title_array, "客户");
   var index_city = find_title_index(title_array, "地市归属");
@@ -591,9 +600,136 @@ var fill_city_210 = function(){
 };
 
 var calc_branch_city_220 = function(){
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx");
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 中间文件_销售数据(渠道归属和地市归属).xlsx  数据读入成功。");
+
+  // 取出必要的列
+  var title_array = gross_info[0];
+  console.log(title_array);
   
+  var index_count = find_title_index(title_array, "实际交货数量");
+  var index_income = find_title_index(title_array, "销售收入");
+  var index_gross = find_title_index(title_array, "毛利");
+  var index_branch = find_title_index(title_array, "渠道归属");
+  var index_city = find_title_index(title_array, "地市归属");
+  
+  // 结果文件的列 title
+  var title_array_dest = [];
+  title_array_dest.push("");
+  title_array_dest.push("自有渠道销量");
+  title_array_dest.push("自有渠道收入");
+  title_array_dest.push("自有渠道毛利");  
+  title_array_dest.push("分销渠道销量");  
+  title_array_dest.push("分销渠道收入");  
+  title_array_dest.push("分销渠道毛利");  
+  title_array_dest.push("电子渠道销量");  
+  title_array_dest.push("电子渠道收入");  
+  title_array_dest.push("电子渠道毛利");  
+  title_array_dest.push("零售渠道销量");  
+  title_array_dest.push("零售渠道收入");  
+  title_array_dest.push("零售渠道毛利");  
+  title_array_dest.push("合计销量");  
+  title_array_dest.push("合计收入");  
+  title_array_dest.push("合计毛利");
+
+  var make_summary_line = function(title){ 
+    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    data[0] = title;
+    return data;
+  };
+  //结果数据
+  var data_array = [];
+  data_array["西安城区"] = make_summary_line('西安城区');
+  data_array["西安郊县"] = make_summary_line('西安郊县');
+  data_array["咸阳"]    = make_summary_line('咸阳');
+  data_array["宝鸡"]    = make_summary_line('宝鸡');
+  data_array["渭南"]    = make_summary_line('渭南');
+  data_array["铜川"]    = make_summary_line('铜川');
+  data_array["延安"]    = make_summary_line('延安');
+  data_array["榆林"]    = make_summary_line('榆林');
+  data_array["汉中"]    = make_summary_line('汉中');
+  data_array["安康"]    = make_summary_line('安康');
+  data_array["商洛"]    = make_summary_line('商洛');
+  data_array["其他"]    = make_summary_line('其他');
+  data_array["零售中心"] = make_summary_line('零售中心');
+  data_array["数据错误"]    = make_summary_line('数据错误');
+
+  // 加总数量，收入，毛利  的函数。
+  var calc_summary = function( order, data){
+    var count = order[index_count];
+    var income = order[index_income];
+    var gross = order[index_gross];
+
+    if( count === undefined ){
+      count = 0;
+    }  
+    if( income === undefined ){
+      income = 0;
+    }
+    if( gross === undefined ){
+      gross = 0;
+    }
+
+    var branch = order[index_branch]
+
+    var offset = 0;
+    if( "自有渠道" === branch ){
+      offset = 0;
+    }else if ( "分销渠道" === branch ){
+      offset = 3;
+    }else if ( "电子渠道" === branch ){
+      offset = 6;
+    }else if ( "零售渠道" === branch ){
+      offset = 9;
+    }
+
+    data[offset+1] += count;
+    data[offset+2] += income;
+    data[offset+3] += gross;
+
+    data[13] += count;
+    data[14] += income;
+    data[15] += gross;
+
+  };
+
+  for(var i=1; i<gross_info.length; i++ ){
+    var order = gross_info[i];
+    var city = order[index_city];
+    //console.log(city); 
+    if( data_array[city] ){
+      calc_summary(order, data_array[city]);
+    }else{
+      calc_summary(order, data_array['数据错误']);
+    }
+  }
+
+  var full_data = [];
+  full_data.push(title_array_dest);
+  full_data.push(data_array["西安城区"] );
+  full_data.push(data_array["西安郊县"] );
+  full_data.push(data_array["咸阳"]    );
+  full_data.push(data_array["宝鸡"]    );
+  full_data.push(data_array["渭南"]    );
+  full_data.push(data_array["铜川"]    );
+  full_data.push(data_array["延安"]    );
+  full_data.push(data_array["榆林"]    );
+  full_data.push(data_array["汉中"]    );
+  full_data.push(data_array["安康"]    );
+  full_data.push(data_array["商洛"]    );
+  full_data.push(data_array["其他"]    );
+  full_data.push(data_array["数据错误"]    );
+  //full_data.push(data_array["零售中心"] );
+  
+  var buffer = xlsx.build([{name: "地市渠道销量收入毛利汇总表", data: full_data}]);
+  fs.writeFileSync(  vm.base_dir + "计算结果_地市渠道销量收入毛利汇总表.xlsx", buffer);
   return true;
 };
+
+var success_230 = function () {
+  return true;
+}
 
 var pick_from_array = function(index_array, src_array){
 
@@ -644,8 +780,10 @@ var getCity = function(custom_info, custom_id){
     //console.log(custom_id);
     //console.log(no);
     if( custom_id == no ){
-      if( city.indexOf("西安") > -1 ){
-        ret_city = "西安";
+      if( city.indexOf("西安城区") > -1 ){
+        ret_city = "西安城区";
+      }else if( city.indexOf("西安郊县") > -1 ){
+        ret_city = "西安郊县";
       }else if( city.indexOf("咸阳") > -1 ){
         ret_city = "咸阳";
       }else if( city.indexOf("宝鸡") > -1 ){
