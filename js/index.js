@@ -9,9 +9,14 @@ var ORDER_DETAIL = null;
 var TAX_RATE = 1.17 ;
 
 var init_100 = function(){
-
   MSG.put("系统启动。");
 
+  // 充当数据源的文件 的文件名 的关键字
+  vm.src_files_flag.push("销售订单明细");
+  vm.src_files_flag.push("物料清单");
+  vm.src_files_flag.push("SCM客户明细");
+  vm.src_files_flag.push("内控成本价格变动");
+  //vm.src_files_flag.push("xxxxxxx");
 }
 
 var check_env_110 = function(){
@@ -21,6 +26,8 @@ var check_env_110 = function(){
   envlist.push("config.json");
   envlist.push("node_modules/node-xlsx/");
   envlist.push("node_modules/underscore/underscore-min.js");
+
+
 
   return true;
 };
@@ -44,13 +51,6 @@ var check_src_130 = function(){
   var temp_path = document.getElementById("file_src").value;
   vm.base_dir = path.dirname(temp_path ) + "/";
   console.log("base_dir: " + vm.base_dir );
-
-  // 充当数据源的文件 的文件名 的关键字
-  vm.src_files_flag.push("销售订单明细");
-  vm.src_files_flag.push("物料清单");
-  vm.src_files_flag.push("SCM客户明细");
-  vm.src_files_flag.push("内控成本价格变动");
-  //vm.src_files_flag.push("xxxxxxx");
 
   // 程序运行所必须的数据源
   vm.src_files = find_src_file(vm.base_dir, vm.src_files_flag);
@@ -198,7 +198,6 @@ var fill_field_160 = function(){
   // 获得物料数据。
   var prod_info = getProd_info();
 
-
   // 销售订单表
   var title_array_3 = order_info[0];
   console.log(title_array_3);
@@ -218,6 +217,8 @@ var fill_field_160 = function(){
 
     // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
+    //console.log(prod_id_in_order);
+    //if( i>100) break;
     //console.log(cost);
     
     if( undefined === cost ){
@@ -250,6 +251,7 @@ var calc_gross_170 = function(){
   MSG.put( " 中间文件_销售数据(包含成本价).xlsx  数据读入成功。");
 
   var title_array = order_info[0];
+  var index_prod_id = find_title_index(title_array, "物料号");
   var index_price = find_title_index(title_array, "销售价格");
   var index_delivery_count = find_title_index(title_array, "实际交货数量");
   var index_cost = find_title_index(title_array, "内控成本价格");
@@ -262,12 +264,14 @@ var calc_gross_170 = function(){
   for(var i=1; i<order_info.length; i++){
     var a_order = order_info[i];
 
+    
+    var prod_id = a_order[index_prod_id];
     var price = a_order[index_price];
     var delivery_count = a_order[index_delivery_count];
     var cost = a_order[index_cost];
 
     if( -1 === cost ){
-      console.log("数据错，忽略。");
+      console.log("数据错。 成本价=-1" );
     }
     else if( 0 < cost ){
       var cost_sum = cost * delivery_count;
@@ -276,7 +280,8 @@ var calc_gross_170 = function(){
       a_order[index_gross] = (income_sum - cost_sum) / TAX_RATE ;
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
-      ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost );
+      console.log("数据错。 成本价=" + cost );
+      // ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost + " 物料号：" + prod_id );
     }
 
   }
@@ -443,7 +448,8 @@ var getProd_info = function(){
   // 物料清单中编码为 1001000202013110  16位   
   //   销售订单中  001001000202013110  18位
   // 需清洗数据。
-  var obj_sheet2 = xlsx.parse( vm.base_dir + vm.src_files['物料清单']); 
+  var obj_sheet2 = xlsx.parse( vm.base_dir + vm.src_files['物料清单']);
+  //console.log(obj_sheet2);
   var prod_info = obj_sheet2[0].data;
   MSG.put( " 物料清单  数据读入成功。");
 
@@ -461,6 +467,8 @@ var getProd_info = function(){
   index_must.push( find_title_index(title_array, "物料描述") );
   index_must.push( find_title_index(title_array, "内控成本价格") );
   index_must.push( find_title_index(title_array, "开始变动日期") );
+  console.log(index_must);
+  
   var prod_must_col = select_col_from_array(prod_info, index_must);
   
   // 装入   内控成本价格变动--1月汇总.xlsx
@@ -472,9 +480,10 @@ var getProd_info = function(){
 
   var index_must_2 = [];
   index_must_2.push( find_title_index(title_array_2, "物料编码") );
-  index_must_2.push( find_title_index(title_array_2, "产品描述") );
+  index_must_2.push( find_title_index(title_array_2, "物料描述") );
   index_must_2.push( find_title_index(title_array_2, "内控成本价格") );
   index_must_2.push( find_title_index(title_array_2, "开始变动日期") );
+  console.log(index_must_2);
   var cost_history_col = select_col_from_array(price_history, index_must_2);
 
   // 合并价格变动数组到物料数组中
@@ -482,8 +491,7 @@ var getProd_info = function(){
     prod_must_col.push(cost_history_col[i]);
   }
 
-  console.log(index_must);
-  console.log(index_must_2);
+  
   return prod_must_col;
 }
 
@@ -556,7 +564,8 @@ var fill_branch_200 = function(){
   }
 
   if( temp_array4.length > 0 ){
-    console.log("数据出错：发现无渠道归属的订单。");
+    ERR_MSG.put("数据出错：发现无渠道归属的订单。请通过「中间文件_销售数据(渠道归属).xlsx」中的对应列查看。 订单数量: "
+                 + temp_array4.length);
     //console.log(temp_array4);
   }
 
@@ -827,7 +836,7 @@ var getCost = function(prod_info, id, order_date){
   cost_index = find_title_index(title_array, "内控成本价格");
   date_index = find_title_index(title_array, "开始变动日期");
 
-  for(var i=2; i<prod_info.length; i++){
+  for(var i=1; i<prod_info.length; i++){
 
     prod_id = prod_info[i][id_index];
     if(_.isNumber(prod_id)){
@@ -836,7 +845,7 @@ var getCost = function(prod_info, id, order_date){
 
     if( isblank(prod_id) ){
       a_index = -1;
-      console.log(id);
+      
     }else{
       var id_b = prod_id.trim(); 
 
