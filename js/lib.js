@@ -15,7 +15,7 @@ var Msg = {
 
     msg.put = function(a_msg){ 
       //msg.msg_list.push("log " + msg.msg_list.length + ": " + a_msg); 
-      msg.msg_list.splice(0,0,"log " + msg.msg_list.length + ": " + a_msg)
+      msg.msg_list.splice(0,0,"\nlog " + msg.msg_list.length + ": " + a_msg)
       //msg.msg_list.push( a_msg ); 
       msg.msg_count++;
     };
@@ -23,14 +23,8 @@ var Msg = {
     msg.download = function(){
       var evt = document.createEvent("HTMLEvents");
       evt.initEvent("click", false, false);//initEvent 不加后两个参数在FF下会报错
-      
-      var a_txt = [];
-      msg.msg_list.forEach(function(e){  
-           a_txt.push(e);
-           a_txt.push("\n");  
-      });
 
-      var blob = new Blob(a_txt);
+      var blob = new Blob(msg.msg_list);
 
       var aLink = document.createElement('a');
       aLink.download = "错误数据记录.txt";
@@ -42,6 +36,16 @@ var Msg = {
   }
 };
 
+function check_index(a_array){
+  var flag = true;
+  for( temp in a_array ){
+    //console.log(temp);
+    if( a_array[temp] === -1 ){
+      flag = false;
+    }
+  }
+  return flag;
+}
 
 // 根据关键词，寻找文件名匹配的目标文件。
 function find_src_file( base_dir, files_flag ){
