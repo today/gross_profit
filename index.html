@@ -35,11 +35,13 @@
     </div>
 
     <div id="cmd_area">
-      请选择要计算的销售订单明细：<br>
-      <input type="file" id="file_src" > <br><br>
-      <div v-for=" a_file in src_files_flag">
-          {{a_file}} : {{ src_files[a_file] }}
-      </div>
+      以下是本次计算的输入文件，请仔细检查是否正确：
+      <input type="file" id="file_src" style="display:none;" > <br><br>
+      <table>
+      <tr v-for=" a_file in src_files_flag">
+          <td> {{a_file}} : </td><td> {{ src_files[a_file] }} </td>
+      </tr>
+      </table>
       <br><br>
 
       <div v-for="a_step in step_array">
