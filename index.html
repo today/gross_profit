@@ -14,7 +14,7 @@
 </head>
 <body id="app">
     <nav>
-        <ul><p class="logo">陕西移动终端公司毛利分析</p></ul>
+        <ul><p class="logo">陕西终端分公司毛利分析</p></ul>
     </nav>
   <div class="now"></div>
   <div class="main-frame">
@@ -37,7 +37,9 @@
     <div id="cmd_area">
       以下是本次计算的输入文件，请仔细检查是否正确：
       <input type="file" id="file_src" style="display:none;" > <br><br>
+      
       <table>
+      <tr><td>工作目录 : </td><td>......{{base_dir.substring(base_dir.length-25)}}</td></tr>
       <tr v-for=" a_file in src_files_flag">
           <td> {{a_file}} : </td><td> {{ src_files[a_file] }} </td>
       </tr>
@@ -81,7 +83,7 @@ var vm = new Vue({
     step_array:[],
     run_msg: MSG,
     err_msg: ERR_MSG,
-    base_dir: "data/201601/",
+    base_dir: "",
     src_files_flag: [],
     src_files: []
   },

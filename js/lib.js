@@ -15,9 +15,10 @@ var Msg = {
 
     msg.put = function(a_msg){ 
       //msg.msg_list.push("log " + msg.msg_list.length + ": " + a_msg); 
-      msg.msg_list.splice(0,0,"\nlog " + msg.msg_list.length + ": " + a_msg)
-      //msg.msg_list.push( a_msg ); 
       msg.msg_count++;
+      msg.msg_list.splice(0,0,"\nlog " + msg.msg_count + ": " + a_msg)
+      //msg.msg_list.push( a_msg ); 
+      
     };
 
     msg.download = function(){

@@ -102,7 +102,7 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("客户"));
   must_col_title.push(make_title("客户名称"));
   must_col_title.push(make_title("销售数量"));
-  must_col_title.push(make_title("物料号"));
+  must_col_title.push(make_title("物料编码"));
   must_col_title.push(make_title("物料组"));
   must_col_title.push(make_title("物料组描述"));
   must_col_title.push(make_title("物料组描述"));
@@ -161,8 +161,8 @@ var copy_order_detail_150 = function(){
     //console.log(i);
   }
 
-  // 进行数据清洗，物料号，把18位的编码缩减到16位。客户编码，删除前面的两个零。
-  var prod_id_index = find_title_index(must_col_title, "物料号");
+  // 进行数据清洗，物料编码，把18位的编码缩减到16位。客户编码，删除前面的两个零。
+  var prod_id_index = find_title_index(must_col_title, "物料编码");
   var custom_id_index = find_title_index(must_col_title, "客户");
   for(var i=1;i<ORDER_DETAIL_SMALL.length; i++){
     var prod_id_temp = ORDER_DETAIL_SMALL[i][prod_id_index];
@@ -172,7 +172,7 @@ var copy_order_detail_150 = function(){
       ORDER_DETAIL_SMALL[i][prod_id_index] = prod_id_temp.substring(2);
       ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
     }else{
-      ERR_MSG.put("数据出错：订单表中的物料号长度不是20。行数：" + i + " 物料号：" + prod_id_temp );
+      ERR_MSG.put("数据出错：订单表中的物料编码长度不是20。行数：" + i + " 物料编码：" + prod_id_temp );
     }
 
     ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
@@ -183,25 +183,28 @@ var copy_order_detail_150 = function(){
   fs.writeFileSync( vm.base_dir + "中间文件_销售数据.xlsx", buffer);
 
   
-  return true;;
+  return true;
 };
 
 // 第六步：补充数据到工作文件。
 // 成本价格取数的时候  应该使用“内控成本价格” 
 var fill_field_160 = function(){
+
+  // 获得物料数据。
+  var prod_info = getProd_info();
+  var buffer = xlsx.build([{name: "debug物料", data: prod_info}]);
+  fs.writeFileSync(  vm.base_dir + "debug物料.xlsx", buffer);
   
   // 装入  [销售订单明细]
   var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据.xlsx");
   var order_info =  obj_sheet[0].data;
   MSG.put( " 中间文件_销售数据.XLSX  数据读入成功。");
-  
-  // 获得物料数据。
-  var prod_info = getProd_info();
+
 
   // 销售订单表
   var title_array_3 = order_info[0];
   console.log(title_array_3);
-  var index_prod_id = find_title_index(title_array_3, "物料号");
+  var index_prod_id = find_title_index(title_array_3, "物料编码");
   var index_order_date = find_title_index(title_array_3, "创建日期");
   var index_cost = find_title_index(title_array_3, "内控成本价格");
 
@@ -218,11 +221,15 @@ var fill_field_160 = function(){
     // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
     //console.log(prod_id_in_order);
-    //if( i>100) break;
+    // if( cost == 40000 ) {
+    //   console.log("40000 ..............................");
+    //   console.log(order_info[i]);
+    //   break;
+    // }
     //console.log(cost);
     
     if( undefined === cost ){
-      ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料号：\t" + prod_id_in_order );
+      ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
       a_order[index_cost] = -1;
     }else{
       // 成本 填入表格中。
@@ -251,7 +258,7 @@ var calc_gross_170 = function(){
   MSG.put( " 中间文件_销售数据(包含成本价).xlsx  数据读入成功。");
 
   var title_array = order_info[0];
-  var index_prod_id = find_title_index(title_array, "物料号");
+  var index_prod_id = find_title_index(title_array, "物料编码");
   var index_price = find_title_index(title_array, "销售价格");
   var index_delivery_count = find_title_index(title_array, "实际交货数量");
   var index_cost = find_title_index(title_array, "内控成本价格");
@@ -263,7 +270,6 @@ var calc_gross_170 = function(){
   // 因为要跳过title，所以下标从 1 开始。
   for(var i=1; i<order_info.length; i++){
     var a_order = order_info[i];
-
     
     var prod_id = a_order[index_prod_id];
     var price = a_order[index_price];
@@ -281,7 +287,7 @@ var calc_gross_170 = function(){
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
       console.log("数据错。 成本价=" + cost );
-      // ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost + " 物料号：" + prod_id );
+      // ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost + " 物料编码：" + prod_id );
     }
 
   }
@@ -305,7 +311,7 @@ var calc_prod_180 = function(){
   title_array.push("单物料毛利");
 
   var index_count = find_title_index(title_array, "实际交货数量");
-  var index_prod_id = find_title_index(title_array, "物料号");
+  var index_prod_id = find_title_index(title_array, "物料编码");
   var index_prod_group_id = find_title_index(title_array, "物料组");
   var index_income = find_title_index(title_array, "销售收入");
   var index_gross = find_title_index(title_array, "毛利");
@@ -429,7 +435,7 @@ var calc_group_190 = function(){
   var index_will_delete = [];
   index_will_delete.push( find_title_index(title_array, "物料描述") );
   index_will_delete.push( find_title_index(title_array, "销售价格") );
-  index_will_delete.push( find_title_index(title_array, "物料号") );
+  index_will_delete.push( find_title_index(title_array, "物料编码") );
   index_will_delete.push( find_title_index(title_array, "成本单价") );
   index_will_delete.push( find_title_index(title_array, "单物料毛利") );
   // 清除不需要的列
@@ -441,8 +447,6 @@ var calc_group_190 = function(){
   return true;
 };
 
-
-
 var getProd_info = function(){
   // 装入  [物料清单.XLSX]
   // 物料清单中编码为 1001000202013110  16位   
@@ -453,21 +457,23 @@ var getProd_info = function(){
   var prod_info = obj_sheet2[0].data;
   MSG.put( " 物料清单  数据读入成功。");
 
-  for(var i=1; i<prod_info.length; i++){
-    prod_info[i].push(40000);
-  }
+  // 补充需要的列
+  prod_info[0].push("开始变动日期");
 
   // 取出必要的列
   var title_array = prod_info[0];
-  title_array.push("开始变动日期")
-
   console.log(title_array);
   var index_must = [];
-  index_must.push( find_title_index(title_array, "物料号") );
+  index_must.push( find_title_index(title_array, "物料编码") );
   index_must.push( find_title_index(title_array, "物料描述") );
   index_must.push( find_title_index(title_array, "内控成本价格") );
   index_must.push( find_title_index(title_array, "开始变动日期") );
   console.log(index_must);
+
+  var index_date = find_title_index(title_array, "开始变动日期");
+  for(var i=1; i<prod_info.length; i++){
+    prod_info[i][index_date] = 40000;
+  }
   
   var prod_must_col = select_col_from_array(prod_info, index_must);
   
@@ -492,6 +498,7 @@ var getProd_info = function(){
   }
 
   
+
   return prod_must_col;
 }
 
@@ -528,7 +535,7 @@ var fill_branch_200 = function(){
   }
 
   var temp_array2 = [];
-  for(var i=1; i<temp_array.length; i++){
+  for(var i=0; i<temp_array.length; i++){
     var temp_order = temp_array[i];
     var temp_id = temp_order[index_warehouse_id];
     var custom_id = temp_order[index_custom_id];
@@ -540,7 +547,7 @@ var fill_branch_200 = function(){
   }
 
   var temp_array3 = [];
-  for(var i=1; i<temp_array2.length; i++){
+  for(var i=0; i<temp_array2.length; i++){
     var temp_order = temp_array2[i];
     var temp_id = temp_order[index_warehouse_id];
     var custom_id = temp_order[index_custom_id];
@@ -552,21 +559,24 @@ var fill_branch_200 = function(){
   }
 
   var temp_array4 = [];
-  for(var i=1; i<temp_array3.length; i++){
+  for(var i=0; i<temp_array3.length; i++){
     var temp_order = temp_array3[i];
     var temp_id = temp_order[index_warehouse_id];
     var custom_id = temp_order[index_custom_id];
-    if( '8'===custom_id.substring(0,1) ){
-      temp_order[index_branch] = '分销渠道';
-    }else{
-      temp_array4.push(temp_order);
-    }
+    temp_order[index_branch] = '分销渠道';
+    // if( '8'===custom_id.substring(0,1) ){
+    //   
+    // }else{
+    //   temp_array4.push(temp_order);
+    // }
   }
 
   if( temp_array4.length > 0 ){
     ERR_MSG.put("数据出错：发现无渠道归属的订单。请通过「中间文件_销售数据(渠道归属).xlsx」中的对应列查看。 订单数量: "
                  + temp_array4.length);
-    //console.log(temp_array4);
+    console.log(temp_array4[0]);
+    console.log(temp_array4[1]);
+    console.log(temp_array4[2]);
   }
 
   var buffer = xlsx.build([{name: "销售数据(渠道归属)", data: gross_info}]);
@@ -601,6 +611,55 @@ var fill_city_210 = function(){
 
     //if(i>10)break;
   }
+
+  // P001  西安城区铺货仓
+  // P002  咸阳铺货仓
+  // P003  宝鸡铺货仓
+  // P004  渭南铺货仓
+  // P005  铜川铺货仓
+  // P006  延安铺货仓
+  // P007  榆林铺货仓
+  // P008  汉中铺货仓
+  // P009  安康铺货仓
+  // P010  商洛铺货仓
+  // P011  西安郊县铺货仓
+  var get_self_branch_city = function( branch ){
+    var city = "出错";
+    if( "" === branch ) city = "";
+    else if ( "P001" === branch ) city = "西安城区";
+    else if ( "P002" === branch ) city = "咸阳";
+    else if ( "P003" === branch ) city = "宝鸡";
+    else if ( "P004" === branch ) city = "渭南";
+    else if ( "P005" === branch ) city = "铜川";
+    else if ( "P006" === branch ) city = "延安";
+    else if ( "P007" === branch ) city = "榆林";
+    else if ( "P008" === branch ) city = "汉中";
+    else if ( "P009" === branch ) city = "安康";
+    else if ( "P010" === branch ) city = "商洛";
+    else if ( "P011" === branch ) city = "西安郊县";
+    else city = "出错";
+
+    return city;
+  };
+
+
+  // 单独处理 自有渠道 的 地市归属
+  var index_warehouse_id = find_title_index(title_array, "库存地点");
+  var index_branch = find_title_index(title_array, "渠道归属");
+  for(var i=1; i<gross_info.length; i++ ){
+    var order = gross_info[i];
+    var branch = order[index_branch];
+    if( "自有渠道" === branch ){
+      var warehouse_id = order[index_warehouse_id];
+      var city = get_self_branch_city(warehouse_id);
+      //console.log(city);
+      order[index_city] = city;
+    }
+    //if(i>10)break;
+  }
+
+
+
 
   var buffer = xlsx.build([{name: "销售数据(渠道归属和地市归属)", data: gross_info}]);
   fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx", buffer);
@@ -662,7 +721,7 @@ var calc_branch_city_220 = function(){
   data_array["商洛"]    = make_summary_line('商洛');
   data_array["其他"]    = make_summary_line('其他');
   data_array["零售中心"] = make_summary_line('零售中心');
-  data_array["数据错误"]    = make_summary_line('数据错误');
+  data_array["数据错误"] = make_summary_line('数据错误');
 
   // 加总数量，收入，毛利  的函数。
   var calc_summary = function( order, data){
@@ -827,12 +886,12 @@ var getCity = function(custom_info, custom_id){
 var getCost = function(prod_info, id, order_date){
   //console.log(id);
   var temp_array = [];
-  var a_index = -1;
+  var temp_index = -1;
   var prod_id = null;
   var id_a = id.trim();
 
   var title_array = prod_info[0];
-  id_index = find_title_index(title_array, "物料号");
+  id_index = find_title_index(title_array, "物料编码");
   cost_index = find_title_index(title_array, "内控成本价格");
   date_index = find_title_index(title_array, "开始变动日期");
 
@@ -844,8 +903,7 @@ var getCost = function(prod_info, id, order_date){
     }
 
     if( isblank(prod_id) ){
-      a_index = -1;
-      
+      temp_index = -1;
     }else{
       var id_b = prod_id.trim(); 
 
@@ -859,10 +917,15 @@ var getCost = function(prod_info, id, order_date){
   var cost = -1;
   if( temp_array.length === 0 ){
     console.log("Warning: cost not found.");
-    cost = "";
+    cost = -2;
   }
   else if( temp_array.length === 1 ){
     cost = temp_array[0][cost_index];
+    // if( undefined === cost ) {
+    //   console.log("11111111111");
+    //   console.log(temp_array);
+    //   console.log(cost_index);
+    // }
   }
   else{
     // 先排序。
@@ -875,8 +938,14 @@ var getCost = function(prod_info, id, order_date){
     for(var i=1;i<temp_array.length; i++){
       var c1 = temp_array[i-1];
       var c2 = temp_array[i];
+      // 
       if( order_date >= c1[date_index] && order_date < c2[date_index] ){
-        cost = temp_array[i-1][cost_index];
+        cost = c1[cost_index];
+        // if( undefined === cost ){
+        //   console.log("222222222222");
+        //   console.log(c1);
+        //   console.log(cost_index);
+        // }
         // console.log("------------");
         // console.log(c1[date_index]);
         // console.log(order_date);
@@ -884,8 +953,9 @@ var getCost = function(prod_info, id, order_date){
         // console.log("------------");
         break;
       }
-      else if( i === temp_array.length-1 && order_date > c2[date_index]){
-        cost = temp_array[i][cost_index];
+      else if( i === (temp_array.length-1) && order_date > c2[date_index]){
+        cost = c2[cost_index];
+        if( undefined === cost ) console.log("3333333333");
         // console.log("------------");
         // console.log(order_date);
         // console.log(c2[date_index]);
