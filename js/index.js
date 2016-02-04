@@ -192,8 +192,8 @@ var fill_field_160 = function(){
 
   // 获得物料数据。
   var prod_info = getProd_info();
-  var buffer = xlsx.build([{name: "debug物料", data: prod_info}]);
-  fs.writeFileSync(  vm.base_dir + "debug物料.xlsx", buffer);
+  // var buffer = xlsx.build([{name: "debug物料", data: prod_info}]);
+  // fs.writeFileSync(  vm.base_dir + "debug物料.xlsx", buffer);
   
   // 装入  [销售订单明细]
   var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据.xlsx");
@@ -220,18 +220,20 @@ var fill_field_160 = function(){
 
     // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
-    //console.log(prod_id_in_order);
-    // if( cost == 40000 ) {
-    //   console.log("40000 ..............................");
-    //   console.log(order_info[i]);
-    //   break;
-    // }
-    //console.log(cost);
     
     if( undefined === cost ){
       ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
       a_order[index_cost] = -1;
-    }else{
+    }
+    else if( 0 === cost ){
+      ERR_MSG.put("数据出错：物料表中的成本价为 0 。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
+      a_order[index_cost] = 0;
+    }
+    else if( -2 === cost ){
+      ERR_MSG.put("数据出错：无法在物料表中找到这个物料。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
+      a_order[index_cost] = -2;
+    }
+    else{
       // 成本 填入表格中。
       a_order[index_cost] = cost;
       //console.log(cost);
@@ -276,10 +278,7 @@ var calc_gross_170 = function(){
     var delivery_count = a_order[index_delivery_count];
     var cost = a_order[index_cost];
 
-    if( -1 === cost ){
-      console.log("数据错。 成本价=-1" );
-    }
-    else if( 0 < cost ){
+    if( 0 < cost ){
       var cost_sum = cost * delivery_count;
       var income_sum = price * delivery_count
       a_order[index_income] = income_sum;
@@ -608,8 +607,8 @@ var fill_city_210 = function(){
     var city = getCity(custom_info, order[index_custom_id]);
     //console.log(city);
     order[index_city] = city;
+    
 
-    //if(i>10)break;
   }
 
   // P001  西安城区铺货仓
@@ -637,7 +636,11 @@ var fill_city_210 = function(){
     else if ( "P009" === branch ) city = "安康";
     else if ( "P010" === branch ) city = "商洛";
     else if ( "P011" === branch ) city = "西安郊县";
-    else city = "出错";
+    else if ( "P099" === branch ) city = "零售中心";
+    else{
+      city = "出错";
+      console.log("客户的地区归属出错。 branch = #" + branch + "#");
+    } 
 
     return city;
   };
@@ -666,6 +669,9 @@ var fill_city_210 = function(){
   
   return true;
 };
+
+// TODO   del  next   line
+temp_summary = 0
 
 var calc_branch_city_220 = function(){
   var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx");
@@ -719,8 +725,8 @@ var calc_branch_city_220 = function(){
   data_array["汉中"]    = make_summary_line('汉中');
   data_array["安康"]    = make_summary_line('安康');
   data_array["商洛"]    = make_summary_line('商洛');
-  data_array["其他"]    = make_summary_line('其他');
   data_array["零售中心"] = make_summary_line('零售中心');
+  data_array["其他"]    = make_summary_line('其他');
   data_array["数据错误"] = make_summary_line('数据错误');
 
   // 加总数量，收入，毛利  的函数。
@@ -750,7 +756,12 @@ var calc_branch_city_220 = function(){
       offset = 6;
     }else if ( "零售渠道" === branch ){
       offset = 9;
+    }else {
+      console.log(XXXXXXXXXXXXX);
     }
+
+    // temp_summary += count;
+    // console.log("temp_summary=" + temp_summary );
 
     data[offset+1] += count;
     data[offset+2] += income;
@@ -786,6 +797,7 @@ var calc_branch_city_220 = function(){
   full_data.push(data_array["汉中"]    );
   full_data.push(data_array["安康"]    );
   full_data.push(data_array["商洛"]    );
+  full_data.push(data_array["零售中心"] );
   full_data.push(data_array["其他"]    );
   full_data.push(data_array["数据错误"]    );
   //full_data.push(data_array["零售中心"] );
@@ -840,19 +852,39 @@ var getCity = function(custom_info, custom_id){
   //console.log(city_index);
   var ret_city = null;
 
+  var no = "xxx";
+  var no2 = "yyy";
+
+  if( typeof(custom_id) === typeof(123) ){
+    no = custom_id;
+  }else{
+    no = parseInt( custom_id );
+  }
+
   for(var i=1; i<custom_info.length; i++){
     var custom = custom_info[i];
-    var no = custom[custom_no_index];
-    var city = custom[city_index];
+    no2 = custom[custom_no_index];
+    var city = custom[city_index].trim();
+
+    if( typeof(no2) === typeof(123) ){
+      no2 = no2;
+    }else{
+      no2 = parseInt(no2);
+    }
 
     //console.log(custom_id);
     //console.log(no);
-    if( custom_id == no ){
+    if( no === no2 ){
       if( city.indexOf("西安城区") > -1 ){
         ret_city = "西安城区";
-      }else if( city.indexOf("西安郊县") > -1 ){
+      }
+      else if( city.indexOf("西安郊县") > -1 ){
         ret_city = "西安郊县";
-      }else if( city.indexOf("咸阳") > -1 ){
+      }
+      else if( city.indexOf("西安") > -1 ){
+        ret_city = "西安城区";
+      }
+      else if( city.indexOf("咸阳") > -1 ){
         ret_city = "咸阳";
       }else if( city.indexOf("宝鸡") > -1 ){
         ret_city = "宝鸡";
@@ -876,10 +908,18 @@ var getCity = function(custom_info, custom_id){
         ret_city = "零售中心";
       }else{
         ret_city = "出错";
+        ERR_MSG.put("客户地区归属出错。 地区 : #" + no + "#" );
+        console.log("客户的地区归属出错。 #" + no + "# #" + no2 + "# #" + city + "#");
       }
       break;
     }
   }
+
+  if( ret_city == null ){
+    console.log("客户的地区归属出错。 #" + no + "# #" + no2 + "# #" + city + "#");
+    console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
+  }
+
   return ret_city;
 }
 
@@ -896,7 +936,6 @@ var getCost = function(prod_info, id, order_date){
   date_index = find_title_index(title_array, "开始变动日期");
 
   for(var i=1; i<prod_info.length; i++){
-
     prod_id = prod_info[i][id_index];
     if(_.isNumber(prod_id)){
       prod_id = ""+prod_id;
