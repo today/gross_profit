@@ -435,6 +435,7 @@ var calc_group_190 = function(){
   index_will_delete.push( find_title_index(title_array, "物料描述") );
   index_will_delete.push( find_title_index(title_array, "销售价格") );
   index_will_delete.push( find_title_index(title_array, "物料编码") );
+  index_will_delete.push( find_title_index(title_array, "库存地点") );
   index_will_delete.push( find_title_index(title_array, "成本单价") );
   index_will_delete.push( find_title_index(title_array, "单物料毛利") );
   // 清除不需要的列
