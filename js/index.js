@@ -101,7 +101,7 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("渠道"));
   must_col_title.push(make_title("客户"));
   must_col_title.push(make_title("客户名称"));
-  must_col_title.push(make_title("销售数量"));
+  //must_col_title.push(make_title("销售数量"));
   must_col_title.push(make_title("物料编码"));
   must_col_title.push(make_title("物料组"));
   must_col_title.push(make_title("物料组描述"));
