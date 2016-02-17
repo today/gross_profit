@@ -135,7 +135,8 @@ vm.step_array.push( make_step( 190, "第九步：加总物料组毛利。", calc
 vm.step_array.push( make_step( 200, "第十步：填充渠道信息。", fill_branch_200, 210 ) );
 vm.step_array.push( make_step( 210, "第十一步：填充地市信息。", fill_city_210, 220 ) );
 vm.step_array.push( make_step( 220, "第十二步：计算地市渠道毛利。", calc_branch_city_220, 230 ) );
-vm.step_array.push( make_step( 230, "第十二步：计算完成。", success_230, 230 ) );
+vm.step_array.push( make_step( 230, "第十二步：格式化数字。", format_230, 240 ) );
+vm.step_array.push( make_step( 240, "第十三步：完成。", finish_240, 250 ) );
 
 init_100();
 console.log(vm.step_array);

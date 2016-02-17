@@ -807,8 +807,46 @@ var calc_branch_city_220 = function(){
   return true;
 };
 
-var success_230 = function () {
+var format_230 = function () {
+  // 处理最终结果，把数字格式化成两位小数
+  var file_list = [];
+  file_list.push("计算结果_销售毛利");
+  file_list.push("计算结果_物料毛利");
+  file_list.push("计算结果_物料组毛利");
+  file_list.push("计算结果_地市渠道销量收入毛利汇总表");
+
+  for(var i=0; i<file_list.length; i++){
+    var obj_sheet = xlsx.parse( vm.base_dir + file_list[i] + ".xlsx");
+    var data_array =  obj_sheet[0].data;
+    var full_data = format_two_decimal( data_array );
+    var buffer = xlsx.build([{name: file_list[i], data: full_data}]);
+    fs.writeFileSync(  vm.base_dir + file_list[i] + ".xlsx", buffer);
+  }
+
   return true;
+}
+
+var finish_240 = function () {
+  return true;
+}
+
+/***************  分隔线  ******************/
+
+var format_two_decimal = function(table_array){
+  for(var i=0;i<table_array.length; i++){
+    var temp_array = table_array[i];
+    //console.log(temp_array);
+    for(var j=0;j<temp_array.length; j++){
+      var temp_cell = temp_array[j];
+      if( typeof(temp_cell) === typeof(3) ){   // 如果是数字
+        if( (! Number.isInteger(temp_cell) ) && (! Number.isNaN(temp_cell) ) ){   // 如果不是整数 并且不是NaN
+          temp_array[j] = temp_cell.toFixed(2);
+        }
+      }
+    }
+    //console.log(temp_array);
+  }
+  return table_array;
 }
 
 var pick_from_array = function(index_array, src_array){
