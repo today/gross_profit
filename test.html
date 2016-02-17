@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>test</title>
+  
+  
+<style type="text/css">
+#run_2 {
+  width: 100px;
+  height: 100px;
+  background-color: red;
+/*  -webkit-animation-name: example;  Chrome, Safari, Opera 
+  -webkit-animation-duration: 4s;*/ /* Chrome, Safari, Opera */
+  animation-name: example;
+  animation-duration: 4s;
+}
+
+/* Chrome, Safari, Opera */
+/*@-webkit-keyframes example {
+    from {background-color: #FFF;}
+    to {background-color: #000;}
+}*/
+
+/* Standard syntax */
+@keyframes example {
+    from {background-color: #FFF;}
+    to {background-color: #000;}
+}
+</style>
+  
+
+
+</head>
+<body>
+
+<div id="run_2"  >
+  aaaaaaaaaaaaaaaaaaaaa<br>
+  bbb<br>
+  ccc<br>
+  ddd<br>
+  eee<br>
+
+</div>
+
+<div id="run_1" >
+  aaa<br>
+  bbb<br>
+  ccc<br>
+  ddd<br>
+  eee<br>
+
+</div>
+  <button onClick="test()">  run   </button>
+<script type="text/javascript">
+
+function test(){
+  console.log("start");
+  var element = document.getElementById("run_1");
+
+  element.animate([
+    { transform: 'translate3D(0, 0, 0)', color : '#FFF;' }, 
+    { transform: 'translate3D(0, -300px, 0)', color : '#000;' }
+  ], {
+    duration: 1000,
+    iterations: 3
+  });
+
+  document.getElementById("run_1").animate([
+    { transform: 'translate3D(0, 0, 0)' }, 
+    { transform: 'translate3D(0, -300px, 0)' }
+  ], {
+    duration: 1000,
+    iterations: 3
+  })
+
+  // var aliceTumbling = [
+  //   { transform: 'rotate(0) translate3D(-50%, -50%, 0', color: '#000' }, 
+  //   { color: '#431236', offset: 0.333},
+  //   { transform: 'rotate(360deg) translate3D(-50%, -50%, 0)', color: '#000' }
+  // ];
+
+  // var aliceTiming = {
+  //   duration: 3000,
+  //   iterations: Infinity
+  // }
+
+  // document.getElementById("alice").animate(
+  //   aliceTumbling, 
+  //   aliceTiming
+  // );
+
+  // element.animate([ 
+  //   { // from
+  //     opacity: 0,
+  //     color: "#fff"
+  //   }, 
+
+  //   { // to
+  //     opacity: 1,
+  //  ​   color: "#000"
+  //   }
+  // ], 2000);
+
+
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
