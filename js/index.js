@@ -105,7 +105,6 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("物料编码"));
   must_col_title.push(make_title("物料组"));
   must_col_title.push(make_title("物料组描述"));
-  must_col_title.push(make_title("物料组描述"));
   must_col_title.push(make_title("库存地点"));
   must_col_title.push(make_title("实际交货日期"));
   must_col_title.push(make_title("城市"));
