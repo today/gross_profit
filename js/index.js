@@ -225,12 +225,16 @@ var fill_field_160 = function(){
       a_order[index_cost] = -1;
     }
     else if( 0 === cost ){
-      ERR_MSG.put("数据出错：物料表中的成本价为 0 。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
+      //ERR_MSG.put("数据出错：物料表中的成本价为 0 。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
       a_order[index_cost] = 0;
     }
     else if( -2 === cost ){
       ERR_MSG.put("数据出错：无法在物料表中找到这个物料。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
       a_order[index_cost] = -2;
+    }
+    else if( -3 === cost ){
+      ERR_MSG.put("数据出错：无法在物料表中找到这个物料。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
+      a_order[index_cost] = -3;
     }
     else{
       // 成本 填入表格中。
@@ -964,7 +968,7 @@ var getCity = function(custom_info, custom_id){
 var getCost = function(prod_info, id, order_date){
   //console.log(id);
   var temp_array = [];
-  var temp_index = -1;
+  var temp_index = -1;   // 貌似这个变量没有用到。
   var prod_id = null;
   var id_a = id.trim();
 
@@ -975,7 +979,8 @@ var getCost = function(prod_info, id, order_date){
 
   for(var i=1; i<prod_info.length; i++){
     prod_id = prod_info[i][id_index];
-    if(_.isNumber(prod_id)){
+    // 把数字转为字符串
+    if(_.isNumber(prod_id)){   
       prod_id = ""+prod_id;
     }
 
@@ -991,7 +996,7 @@ var getCost = function(prod_info, id, order_date){
   }
 
   // 看看哪个价钱是当前的价钱
-  var cost = -1;
+  var cost = -3;
   if( temp_array.length === 0 ){
     console.log("Warning: cost not found.");
     cost = -2;
@@ -1030,7 +1035,7 @@ var getCost = function(prod_info, id, order_date){
         // console.log("------------");
         break;
       }
-      else if( i === (temp_array.length-1) && order_date > c2[date_index]){
+      else if( i === (temp_array.length-1) && order_date >= c2[date_index]){
         cost = c2[cost_index];
         if( undefined === cost ) console.log("3333333333");
         // console.log("------------");
