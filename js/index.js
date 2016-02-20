@@ -605,7 +605,8 @@ var fill_branch_200 = function(){
     temp_order[index_branch] = '未确定渠道';
 
     ERR_MSG.put("数据出错：发现无渠道归属的订单。 库存地点=" + temp_id + " 客户编码=" +　custom_id );
-    console.log(temp_order);
+    //console.log(temp_order);
+    console.log("库存地点=" + temp_id + " 客户编码=" + custom_id);
   }
   
   var buffer = xlsx.build([{name: "销售数据(渠道归属)", data: gross_info}]);
