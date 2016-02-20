@@ -523,12 +523,11 @@ var fill_branch_200 = function(){
   // 第一步，筛选出仓库（表头为：库存地点）是 P012 的，全部是电子渠道。
   // 第二步，仓库是 P001~P011 ，并且客户编码(表头为：客户)是 001 开头，是自有渠道。
   // 第三步，仓库是 1010  开头，并且客户编码 002 开头，是零售渠道。
+  // 第四步，1001仓出库的 按照客户编码区分  1开头的就是自有渠道 2开头的就是零售渠道 8开头的就是分销渠道
+  // 第五步，仓库是 任意 , 客户编码是 8 开头，是分销渠道。
+  // 第六步，如果仍然有剩余数据，报错。
 
-  // 第  步，1001仓出库的 按照客户编码区分  1开头的就是自有渠道 2开头的就是零售渠道 8开头的就是分销渠道
-
-  // 第四步，仓库是 任意 , 客户编码是 8 开头，是分销渠道。
-  // 第五步，如果仍然有剩余数据，报错。
-  // 注：客户编码也需要做数据清洗，已经在前面做了。
+  // 注：销售表里的 客户编码 也需要做数据清洗，已经在前面做了。
   var temp_array = [];
   for(var i=1; i<gross_info.length; i++){
     var temp_order = gross_info[i];
@@ -571,11 +570,11 @@ var fill_branch_200 = function(){
     var custom_id = temp_order[index_custom_id];
     if( '1001' === temp_id.substring(0,4) ){
 
-      if( '1'===custom_id.substring(0,1) ){
+      if( '001'===custom_id.substring(0,1) ){
         temp_order[index_branch] = '自有渠道';
-      }else if( '2'===custom_id.substring(0,1) ){
+      }else if( '002'===custom_id.substring(0,1) ){
         temp_order[index_branch] = '零售渠道';
-      }else if( '8'===custom_id.substring(0,1) ){
+      }else if( '008'===custom_id.substring(0,1) ){
         temp_order[index_branch] = '分销渠道';
       }else{
         temp_array4.push(temp_order);
@@ -599,17 +598,18 @@ var fill_branch_200 = function(){
     }
   }
 
-  if( temp_array5.length > 0 ){
-    ERR_MSG.put("数据出错：发现无渠道归属的订单。请通过「中间文件_销售数据(渠道归属).xlsx」中的对应列查看。 订单数量: "
-                 + temp_array4.length);
-    console.log(temp_array5[0]);
-    console.log(temp_array5[1]);
-    console.log(temp_array5[2]);
-  }
+  for(var i=0; i<temp_array5.length; i++){
+    var temp_order = temp_array5[i];
+    var temp_id = temp_order[index_warehouse_id];
+    var custom_id = temp_order[index_custom_id];
+    temp_order[index_branch] = '未确定渠道';
 
+    ERR_MSG.put("数据出错：发现无渠道归属的订单。 库存地点=" + temp_id + " 客户编码=" +　custom_id );
+    console.log(temp_order);
+  }
+  
   var buffer = xlsx.build([{name: "销售数据(渠道归属)", data: gross_info}]);
   fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属).xlsx", buffer);
-
 
   return true;
 };
@@ -688,9 +688,6 @@ var fill_city_210 = function(){
     //if(i>10)break;
   }
 
-
-
-
   var buffer = xlsx.build([{name: "销售数据(渠道归属和地市归属)", data: gross_info}]);
   fs.writeFileSync(  vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx", buffer);
   
@@ -729,13 +726,16 @@ var calc_branch_city_220 = function(){
   title_array_dest.push("电子渠道毛利");  
   title_array_dest.push("零售渠道销量");  
   title_array_dest.push("零售渠道收入");  
-  title_array_dest.push("零售渠道毛利");  
+  title_array_dest.push("零售渠道毛利"); 
+  title_array_dest.push("未确定渠道销量");  
+  title_array_dest.push("未确定渠道收入");  
+  title_array_dest.push("未确定渠道毛利");  
   title_array_dest.push("合计销量");  
   title_array_dest.push("合计收入");  
   title_array_dest.push("合计毛利");
 
   var make_summary_line = function(title){ 
-    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     data[0] = title;
     return data;
   };
@@ -783,6 +783,8 @@ var calc_branch_city_220 = function(){
       offset = 6;
     }else if ( "零售渠道" === branch ){
       offset = 9;
+    }else if ( "未确定渠道" === branch ){
+      offset = 12;
     }else {
       console.log("渠道归属 为空");
     }
@@ -794,9 +796,9 @@ var calc_branch_city_220 = function(){
     data[offset+2] += income;
     data[offset+3] += gross;
 
-    data[13] += count;
-    data[14] += income;
-    data[15] += gross;
+    data[16] += count;
+    data[17] += income;
+    data[18] += gross;
 
   };
 
