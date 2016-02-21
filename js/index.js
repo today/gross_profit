@@ -469,10 +469,12 @@ var getProd_info = function(){
   var index_must = [];
   index_must.push( find_title_index(title_array, "物料编码") );
   index_must.push( find_title_index(title_array, "物料描述") );
+  index_must.push( find_title_index(title_array, "预期成本价格") );
   index_must.push( find_title_index(title_array, "内控成本价格") );
   index_must.push( find_title_index(title_array, "开始变动日期") );
   console.log(index_must);
 
+  // 填充一个默认值到 「开始变动日期」  字段里
   var index_date = find_title_index(title_array, "开始变动日期");
   for(var i=1; i<prod_info.length; i++){
     prod_info[i][index_date] = 40000;
@@ -490,6 +492,7 @@ var getProd_info = function(){
   var index_must_2 = [];
   index_must_2.push( find_title_index(title_array_2, "物料编码") );
   index_must_2.push( find_title_index(title_array_2, "物料描述") );
+  index_must_2.push( find_title_index(title_array_2, "预期成本价格") );
   index_must_2.push( find_title_index(title_array_2, "内控成本价格") );
   index_must_2.push( find_title_index(title_array_2, "开始变动日期") );
   console.log(index_must_2);
@@ -1000,7 +1003,8 @@ var getCost = function(prod_info, id, order_date){
 
   var title_array = prod_info[0];
   id_index = find_title_index(title_array, "物料编码");
-  cost_index = find_title_index(title_array, "内控成本价格");
+  cost_index = find_title_index(title_array, "预期成本价格");
+  //cost_index = find_title_index(title_array, "内控成本价格");
   date_index = find_title_index(title_array, "开始变动日期");
 
   for(var i=1; i<prod_info.length; i++){
