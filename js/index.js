@@ -241,7 +241,6 @@ var fill_field_160 = function(){
       a_order[index_cost] = cost;
       //console.log(cost);
     }
-
   }
 
   var buffer = xlsx.build([{name: "中间文件_销售数据(包含成本价)", data: order_info}]);
@@ -282,10 +281,10 @@ var calc_gross_170 = function(){
     var cost = a_order[index_cost];
 
     if( 0 < cost ){
-      var cost_sum = cost * delivery_count;
-      var income_sum = price * delivery_count
+      var cost_sum = cost * delivery_count / TAX_RATE;
+      var income_sum = price * delivery_count / TAX_RATE
       a_order[index_income] = income_sum;
-      a_order[index_gross] = (income_sum - cost_sum) / TAX_RATE ;
+      a_order[index_gross] = (income_sum - cost_sum) ;
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
       console.log("数据错。 成本价=" + cost );
@@ -1003,8 +1002,8 @@ var getCost = function(prod_info, id, order_date){
 
   var title_array = prod_info[0];
   id_index = find_title_index(title_array, "物料编码");
-  cost_index = find_title_index(title_array, "预期成本价格");
-  //cost_index = find_title_index(title_array, "内控成本价格");
+  //cost_index = find_title_index(title_array, "预期成本价格");
+  cost_index = find_title_index(title_array, "内控成本价格");
   date_index = find_title_index(title_array, "开始变动日期");
 
   for(var i=1; i<prod_info.length; i++){
