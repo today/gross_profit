@@ -49,7 +49,7 @@ var check_src_130 = function(){
 
   // 设置base_dir
   var temp_path = document.getElementById("file_src").value;
-  vm.base_dir = path.dirname(temp_path ) + "/";
+  vm.base_dir = path.dirname(temp_path ) + "/" ;
   console.log("base_dir: " + vm.base_dir );
 
   // 程序运行所必须的数据源
@@ -287,14 +287,14 @@ var calc_gross_170 = function(){
       a_order[index_gross] = (income_sum - cost_sum) ;
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
     }else{
-      console.log("数据错。 成本价=" + cost );
+      console.log("数据  有可能  有错。 成本价=" + cost );
       // ERR_MSG.put("数据出错：成本价数据异常。行数：" + (i+1) + " 成本价：" + cost + " 物料编码：" + prod_id );
     }
 
   }
 
   var buffer = xlsx.build([{name: "计算结果_销售毛利", data: order_info}]);
-  fs.writeFileSync(  vm.base_dir + "计算结果_销售毛利.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "计算结果_销售毛利("+ vm.cost_type +").xlsx", buffer);
 
   return true;;
 };
@@ -302,7 +302,7 @@ var calc_gross_170 = function(){
 // 第六步：加总物料毛利。
 var calc_prod_180 = function(){
   
-  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利("+ vm.cost_type +").xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 计算结果_销售毛利.xlsx  数据读入成功。");
 
@@ -373,7 +373,7 @@ var calc_prod_180 = function(){
 
 
   var buffer = xlsx.build([{name: "计算结果_物料毛利", data: thin_gross}]);
-  fs.writeFileSync(  vm.base_dir + "计算结果_物料毛利.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "计算结果_物料毛利("+ vm.cost_type +").xlsx", buffer);
 
   return true;
 };
@@ -383,7 +383,7 @@ var calc_group_190 = function(){
   
   MSG.put( "数据较多，载入约需5秒。请耐心等待。");
 
-  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_物料毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_物料毛利("+ vm.cost_type +").xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 计算结果_物料毛利.xlsx  数据读入成功。");
 
@@ -444,7 +444,7 @@ var calc_group_190 = function(){
   var thin_gross = del_col_from_array(group_gross_sum, index_will_delete);
 
   var buffer = xlsx.build([{name: "计算结果_物料组毛利", data: thin_gross}]);
-  fs.writeFileSync(  vm.base_dir + "计算结果_物料组毛利.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "计算结果_物料组毛利("+ vm.cost_type +").xlsx", buffer);
 
   return true;
 };
@@ -509,7 +509,7 @@ var getProd_info = function(){
 
 var fill_branch_200 = function(){
 
-  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利.xlsx");
+  var obj_sheet = xlsx.parse( vm.base_dir + "计算结果_销售毛利("+ vm.cost_type +").xlsx");
   var gross_info =  obj_sheet[0].data;
   MSG.put( " 计算结果_销售毛利.xlsx  数据读入成功。");
 
@@ -835,17 +835,17 @@ var calc_branch_city_220 = function(){
   //full_data.push(data_array["零售中心"] );
   
   var buffer = xlsx.build([{name: "地市渠道销量收入毛利汇总表", data: full_data}]);
-  fs.writeFileSync(  vm.base_dir + "计算结果_地市渠道销量收入毛利汇总表.xlsx", buffer);
+  fs.writeFileSync(  vm.base_dir + "计算结果_地市渠道销量收入毛利汇总表("+ vm.cost_type +").xlsx", buffer);
   return true;
 };
 
 var format_230 = function () {
   // 处理最终结果，把数字格式化成两位小数
   var file_list = [];
-  file_list.push("计算结果_销售毛利");
-  file_list.push("计算结果_物料毛利");
-  file_list.push("计算结果_物料组毛利");
-  file_list.push("计算结果_地市渠道销量收入毛利汇总表");
+  file_list.push("计算结果_销售毛利("+ vm.cost_type +")");
+  file_list.push("计算结果_物料毛利("+ vm.cost_type +")");
+  file_list.push("计算结果_物料组毛利("+ vm.cost_type +")");
+  file_list.push("计算结果_地市渠道销量收入毛利汇总表("+ vm.cost_type +")");
 
   for(var i=0; i<file_list.length; i++){
     var obj_sheet = xlsx.parse( vm.base_dir + file_list[i] + ".xlsx");
@@ -859,6 +859,31 @@ var format_230 = function () {
 }
 
 var finish_240 = function () {
+  // 打开计算结果的文件夹
+  var os = require('os');
+  var os_name = os.platform();
+  var exec = require('child_process').exec; 
+
+  if( "darwin" === os_name ){
+    
+    var cmdStr = 'open ' + vm.base_dir ;
+    console.log(cmdStr);
+    exec(cmdStr, function(err,stdout,stderr){
+        if(err) {
+            console.log('error:'+stderr);
+        } 
+    });
+  }
+  else if( "win32" === os_name ){
+    var cmdStr = 'start ' + vm.base_dir ;
+    exec(cmdStr, function(err,stdout,stderr){
+        if(err) {
+            console.log('error:' + stderr);
+        } 
+    });
+  }else{
+    console.log("暂不支持的操作系统： " + os_name );
+  }
   return true;
 }
 
@@ -1003,7 +1028,9 @@ var getCost = function(prod_info, id, order_date){
   var title_array = prod_info[0];
   id_index = find_title_index(title_array, "物料编码");
   //cost_index = find_title_index(title_array, "预期成本价格");
-  cost_index = find_title_index(title_array, "内控成本价格");
+  //cost_index = find_title_index(title_array, "内控成本价格");
+  cost_index = find_title_index(title_array, vm.cost_type );
+  
   date_index = find_title_index(title_array, "开始变动日期");
 
   for(var i=1; i<prod_info.length; i++){

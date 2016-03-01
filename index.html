@@ -35,8 +35,15 @@
     </div>
 
     <div id="cmd_area">
-      以下是本次计算的输入文件，请仔细检查是否正确：
-      <input type="file" id="file_src" style="display:none;" > <br><br>
+      请选择成本类型：
+      <input type="radio" id="r_one" value="内控成本价格" v-model="cost_type">
+      <label for="one">内控成本价格</label>
+      <input type="radio" id="r_two" value="预期成本价格" v-model="cost_type">
+      <label for="two">预期成本价格</label>
+      <br><br>
+
+      以下是自动匹配的输入文件，请仔细检查是否正确：
+      <input type="file" id="file_src" style="display:none;" > <br>
       
       <table>
       <tr><td>工作目录 : </td><td>......{{base_dir.substring(base_dir.length-25)}}</td></tr>
@@ -84,6 +91,7 @@ var vm = new Vue({
     run_msg: MSG,
     err_msg: ERR_MSG,
     base_dir: "",
+    cost_type: "内控成本价格",
     src_files_flag: [],
     src_files: []
   },
@@ -136,7 +144,7 @@ vm.step_array.push( make_step( 200, "第十步：填充渠道信息。", fill_br
 vm.step_array.push( make_step( 210, "第十一步：填充地市信息。", fill_city_210, 220 ) );
 vm.step_array.push( make_step( 220, "第十二步：计算地市渠道毛利。", calc_branch_city_220, 230 ) );
 vm.step_array.push( make_step( 230, "第十二步：格式化数字。", format_230, 240 ) );
-vm.step_array.push( make_step( 240, "第十三步：完成。", finish_240, 250 ) );
+vm.step_array.push( make_step( 240, "第十三步：完成。", finish_240, 240 ) );
 
 init_100();
 console.log(vm.step_array);
