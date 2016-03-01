@@ -558,7 +558,7 @@ var fill_branch_200 = function(){
     var temp_order = temp_array2[i];
     var temp_id = temp_order[index_warehouse_id];
     var custom_id = temp_order[index_custom_id];
-    if( '1010' === temp_id.substring(0,4) && '002'===custom_id.substring(0,3) ){
+    if( '002'===custom_id.substring(0,3) ){
       temp_order[index_branch] = '零售渠道';
     }else{
       temp_array3.push(temp_order);
@@ -593,7 +593,7 @@ var fill_branch_200 = function(){
     var temp_id = temp_order[index_warehouse_id];
     var custom_id = temp_order[index_custom_id];
     
-    if( '8'===custom_id.substring(0,1) ){
+    if( '8'===custom_id.substring(0,1) || '001'===custom_id.substring(0,3) ){
       temp_order[index_branch] = '分销渠道';
     }else{
       temp_array5.push(temp_order);
