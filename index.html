@@ -20,7 +20,7 @@
   <div class="main-frame">
     <div id="msg_area">
         <div v-for=" a_msg in run_msg.msg_list | limitBy 12">
-          {{a_msg}} 
+          {{a_msg}} <br><br>
         </div>
         <div class="err_area" v-show="err_msg.msg_count>0" >
           数据出错。发现错误：{{err_msg.msg_count}} 个。
@@ -134,7 +134,7 @@ var make_step = function( i_index, s_desc, f_func_name, next ){
 vm.step_array.push( make_step( 110, "第一步：检查环境。", check_env_110, 120 ) );
 vm.step_array.push( make_step( 120, "第二步：选择销售订单明细文件。", select_file_120 , 130) );
 vm.step_array.push( make_step( 130, "第三步：检查输入文件是否齐备。", check_src_130, 140 ) );
-vm.step_array.push( make_step( 140, "第四步：读入销售订单明细，并检查内容。", load_order_detail_140, 150 ) );
+vm.step_array.push( make_step( 140, "第四步：并检查标题栏名称是否合格。", load_order_detail_140, 150 ) );
 vm.step_array.push( make_step( 150, "第五步：筛选数据到工作文件。", copy_order_detail_150, 160 ) );
 vm.step_array.push( make_step( 160, "第六步：补充数据到工作文件。", fill_field_160, 170 ) );
 vm.step_array.push( make_step( 170, "第七步：计算订单毛利。", calc_gross_170, 180 ) );

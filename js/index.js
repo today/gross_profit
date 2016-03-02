@@ -65,25 +65,78 @@ var check_src_130 = function(){
       run_flag = false;
     }
   }
-
-
   return run_flag;;
 };
 
 var load_order_detail_140 = function(){
+  var flag = true;
 
   var obj = null;
-  
   obj = xlsx.parse( vm.base_dir + vm.src_files['销售订单明细'] ); // 读入xlsx文件
-  
   // 取出第一个sheet
-  ORDER_DETAIL = obj[0].data; 
+  ORDER_DETAIL = obj[0].data;
 
   // 清洗数据：去除空格
   trim_array_element(ORDER_DETAIL[0]); 
   console.log(ORDER_DETAIL[0]);
 
-  MSG.put( "销售订单明细   数据读入成功。");
+  // 检查列名是否正确
+  var row_1 = ORDER_DETAIL[0];
+  var must_title = [];
+  must_title.push("实际交货数量");
+  must_title.push("物料描述");
+  must_title.push("交货完成状态");
+  must_title.push("销售价格");
+  must_title.push("订单类型");
+  must_title.push("渠道");
+  must_title.push("客户");
+  must_title.push("客户名称");
+  must_title.push("物料编码");
+  must_title.push("物料组");
+  must_title.push("物料组描述");
+  must_title.push("库存地点");
+  must_title.push("实际交货日期");
+  must_title.push("城市");
+  must_title.push("客户参考号");
+  must_title.push("创建日期");
+  MSG.put( "开始检查「销售订单明细」文件的标题栏。");
+  flag = flag && check_must_title(row_1, must_title);
+
+  obj = xlsx.parse( vm.base_dir + vm.src_files['物料清单'] );
+  // 取出第一个sheet
+  var sheet_1 = obj[0].data;
+  var row_1 = sheet_1[0];
+  var must_title = [];
+  must_title.push("物料编码");
+  must_title.push("预期成本价格");
+  must_title.push("内控成本价格");
+  must_title.push("开始变动日期");
+  MSG.put( "开始检查「物料清单」文件的标题栏。");
+  flag = flag && check_must_title(row_1, must_title);
+
+  obj = xlsx.parse( vm.base_dir + vm.src_files['SCM客户明细'] );
+  // 取出第一个sheet
+  var sheet_1 = obj[0].data;
+  var row_1 = sheet_1[0];
+  var must_title = [];
+  must_title.push("客户");
+  must_title.push("地市");
+  MSG.put( "开始检查「SCM客户明细」文件的标题栏。");
+  flag = flag && check_must_title(row_1, must_title);
+
+  obj = xlsx.parse( vm.base_dir + vm.src_files['内控成本价格变动'] );
+  // 取出第一个sheet
+  var sheet_1 = obj[0].data;
+  var row_1 = sheet_1[0];
+  var must_title = [];
+  must_title.push("物料编码");
+  must_title.push("预期成本价格");
+  must_title.push("内控成本价格");
+  must_title.push("开始变动日期");
+  MSG.put( "开始检查「内控成本价格变动」文件的标题栏。");
+  flag = flag && check_must_title(row_1, must_title);
+
+  //MSG.put( "销售订单明细   数据读入成功。");
 
   return true;;
 };
@@ -491,7 +544,7 @@ var getProd_info = function(){
   
   var prod_must_col = select_col_from_array(prod_info, index_must);
   
-  // 装入   内控成本价格变动--1月汇总.xlsx
+  // 装入 
   var obj_sheet3 = xlsx.parse( vm.base_dir + vm.src_files['内控成本价格变动']); 
   var price_history = obj_sheet3[0].data;
   MSG.put( " 内控成本价格变动  数据读入成功。");
@@ -511,8 +564,6 @@ var getProd_info = function(){
   for(var i=1; i<cost_history_col.length; i++){
     prod_must_col.push(cost_history_col[i]);
   }
-
-  
 
   return prod_must_col;
 }
@@ -1115,12 +1166,16 @@ var getCost = function(prod_info, id, order_date){
   return cost;
 };
 
-var find_prod = function(id){
-  var prod = null;
-  return prod;
-};
 
-
+var check_must_title = function(target, keywords ){
+  for(var i=0; i<keywords.length; i++ ){
+    var kw = keywords[i];
+    if( -1 === _.indexOf(target, kw)){
+      // 显示出错提示。
+      ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据。" );
+    }
+  }
+}
 
 
 
