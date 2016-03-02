@@ -137,7 +137,7 @@ var copy_order_detail_150 = function(){
       }
     }
   }
-  console.log(must_col_title);
+  //console.log(must_col_title);
 
   // 获取所有的 index 值。
   var must_col_idx = _.pluck(must_col_title, 'index');
@@ -155,7 +155,6 @@ var copy_order_detail_150 = function(){
       ORDER_DETAIL_SMALL.push(must_col_content);
       must_col_content = null;
     }
-    
     // console.log(must_col_content);
     //console.log(i);
   }
@@ -1065,7 +1064,7 @@ var getCost = function(prod_info, id, order_date){
   // 看看哪个价钱是当前的价钱
   var cost = -3;
   if( temp_array.length === 0 ){
-    console.log("Warning: cost not found.");
+    console.log("Warning: cost not found. prod_id=" +　id_a　);
     cost = -2;
   }
   else if( temp_array.length === 1 ){
@@ -1104,7 +1103,7 @@ var getCost = function(prod_info, id, order_date){
       }
       else if( i === (temp_array.length-1) && order_date >= c2[date_index]){
         cost = c2[cost_index];
-        if( undefined === cost ) console.log("3333333333");
+        if( undefined === cost ) console.log("cost is undefined");
         // console.log("------------");
         // console.log(order_date);
         // console.log(c2[date_index]);
