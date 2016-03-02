@@ -87,10 +87,11 @@ var load_order_detail_140 = function(){
   must_title.push("物料描述");
   must_title.push("交货完成状态");
   must_title.push("销售价格");
-  must_title.push("订单类型");
+  must_title.push("订单金额");
   must_title.push("渠道");
   must_title.push("客户");
   must_title.push("客户名称");
+  must_title.push("订单数量");
   must_title.push("物料编码");
   must_title.push("物料组");
   must_title.push("物料组描述");
@@ -150,11 +151,12 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("物料描述"));
   must_col_title.push(make_title("交货完成状态"));
   must_col_title.push(make_title("销售价格"));
+  must_col_title.push(make_title("订单金额"));
   must_col_title.push(make_title("订单类型"));
   must_col_title.push(make_title("渠道"));
   must_col_title.push(make_title("客户"));
   must_col_title.push(make_title("客户名称"));
-  //must_col_title.push(make_title("销售数量"));
+  must_col_title.push(make_title("订单数量"));
   must_col_title.push(make_title("物料编码"));
   must_col_title.push(make_title("物料组"));
   must_col_title.push(make_title("物料组描述"));
@@ -325,9 +327,10 @@ var calc_gross_170 = function(){
   MSG.put( " 中间文件_销售数据(包含成本价).xlsx  数据读入成功。");
 
   var title_array = order_info[0];
+  
   var index_prod_id = find_title_index(title_array, "物料编码");
-  var index_price = find_title_index(title_array, "销售价格");
-  var index_delivery_count = find_title_index(title_array, "实际交货数量");
+  var index_order_amount = find_title_index(title_array, "订单金额"); 
+  var index_count = find_title_index(title_array, "订单数量");
   var index_cost = find_title_index(title_array, "内控成本价格");
   var index_income = find_title_index(title_array, "销售收入");
   var index_gross = find_title_index(title_array, "毛利");
@@ -339,13 +342,13 @@ var calc_gross_170 = function(){
     var a_order = order_info[i];
     
     var prod_id = a_order[index_prod_id];
-    var price = a_order[index_price];
-    var delivery_count = a_order[index_delivery_count];
+    var amount = a_order[index_order_amount];
+    var order_count = a_order[index_count];
     var cost = a_order[index_cost];
 
     if( 0 < cost ){
-      var cost_sum = cost * delivery_count / TAX_RATE;
-      var income_sum = price * delivery_count / TAX_RATE
+      var cost_sum = cost * order_count / TAX_RATE;
+      var income_sum = amount / TAX_RATE
       a_order[index_income] = income_sum;
       a_order[index_gross] = (income_sum - cost_sum) ;
       a_order[index_gross_rate] = a_order[index_gross] / cost_sum * 100;
@@ -1072,8 +1075,8 @@ var getCity = function(custom_info, custom_id){
   }
 
   if( ret_city == null ){
-    console.log("客户的地区归属出错。 #" + no + "# #" + no2 + "# #" + city + "#");
-    console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
+    console.log("未能找到对应的客户。 客户编码: #" + no + "# #" + ret_city + "#");
+    //console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
   }
 
   return ret_city;
@@ -1172,7 +1175,7 @@ var check_must_title = function(target, keywords ){
     var kw = keywords[i];
     if( -1 === _.indexOf(target, kw)){
       // 显示出错提示。
-      ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据。" );
+      ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据的第一行。" );
     }
   }
 }
