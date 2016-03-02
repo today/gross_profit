@@ -785,24 +785,35 @@ var calc_branch_city_220 = function(){
   title_array_dest.push("自有渠道销量");
   title_array_dest.push("自有渠道收入");
   title_array_dest.push("自有渠道毛利");  
+  title_array_dest.push("自有渠道毛利率");
+
   title_array_dest.push("分销渠道销量");  
   title_array_dest.push("分销渠道收入");  
-  title_array_dest.push("分销渠道毛利");  
+  title_array_dest.push("分销渠道毛利"); 
+  title_array_dest.push("分销渠道毛利率");
+
   title_array_dest.push("电子渠道销量");  
   title_array_dest.push("电子渠道收入");  
-  title_array_dest.push("电子渠道毛利");  
+  title_array_dest.push("电子渠道毛利"); 
+  title_array_dest.push("电子渠道毛利率");
+
   title_array_dest.push("零售渠道销量");  
   title_array_dest.push("零售渠道收入");  
   title_array_dest.push("零售渠道毛利"); 
+  title_array_dest.push("零售渠道毛利率");
+
   title_array_dest.push("未确定渠道销量");  
   title_array_dest.push("未确定渠道收入");  
-  title_array_dest.push("未确定渠道毛利");  
+  title_array_dest.push("未确定渠道毛利"); 
+  title_array_dest.push("未确定渠道毛利率");
+
   title_array_dest.push("合计销量");  
   title_array_dest.push("合计收入");  
   title_array_dest.push("合计毛利");
+  title_array_dest.push("合计毛利率");
 
   var make_summary_line = function(title){ 
-    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     data[0] = title;
     return data;
   };
@@ -823,11 +834,12 @@ var calc_branch_city_220 = function(){
   data_array["其他"]    = make_summary_line('其他');
   data_array["数据错误"] = make_summary_line('数据错误');
 
-  // 加总数量，收入，毛利  的函数。
+  // 加总数量，收入，毛利，毛利率  的函数。
   var calc_summary = function( order, data){
     var count = order[index_count];
     var income = order[index_income];
     var gross = order[index_gross];
+    var gross_rate = 0;
 
     if( count === undefined ){
       count = 0;
@@ -845,13 +857,13 @@ var calc_branch_city_220 = function(){
     if( "自有渠道" === branch ){
       offset = 0;
     }else if ( "分销渠道" === branch ){
-      offset = 3;
+      offset = 4;
     }else if ( "电子渠道" === branch ){
-      offset = 6;
+      offset = 8;
     }else if ( "零售渠道" === branch ){
-      offset = 9;
-    }else if ( "未确定渠道" === branch ){
       offset = 12;
+    }else if ( "未确定渠道" === branch ){
+      offset = 16;
     }else {
       console.log("渠道归属 为空");
     }
@@ -862,10 +874,16 @@ var calc_branch_city_220 = function(){
     data[offset+1] += count;
     data[offset+2] += income;
     data[offset+3] += gross;
+    if( data[offset+2] != 0 ){
+      data[offset+4] = data[offset+3]/data[offset+2]*100;
+    }
 
-    data[16] += count;
-    data[17] += income;
-    data[18] += gross;
+    data[21] += count;
+    data[22] += income;
+    data[23] += gross;
+    if( data[22] != 0 ){
+      data[24] = data[23]/data[22]*100;
+    }
 
   };
 
