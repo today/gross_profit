@@ -163,6 +163,16 @@ var copy_order_detail_150 = function(){
   // 进行数据清洗，物料编码，把18位的编码缩减到16位。客户编码，删除前面的两个零。
   var prod_id_index = find_title_index(must_col_title, "物料编码");
   var custom_id_index = find_title_index(must_col_title, "客户");
+
+  if( -1 === prod_id_index ){
+    ERR_MSG.put("数据出错：。无法找到「物料编码」列，请检查数据。" );
+    return false;
+  }
+  if( -1 === custom_id_index ){
+    ERR_MSG.put("数据出错：。无法找到「客户」列，请检查数据。" );
+    return false;
+  }
+
   for(var i=1;i<ORDER_DETAIL_SMALL.length; i++){
     var prod_id_temp = ORDER_DETAIL_SMALL[i][prod_id_index];
     var custom_id_temp = ORDER_DETAIL_SMALL[i][custom_id_index];
@@ -171,7 +181,8 @@ var copy_order_detail_150 = function(){
       ORDER_DETAIL_SMALL[i][prod_id_index] = prod_id_temp.substring(2);
       ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
     }else{
-      ERR_MSG.put("数据出错：订单表中的物料编码长度不是20。行数：" + i + " 物料编码：" + prod_id_temp );
+      ERR_MSG.put("数据出错：订单表中的物料编码长度不是18。行数：" + i + " 物料编码：" + prod_id_temp );
+      console.log(prod_id_temp);
     }
 
     ORDER_DETAIL_SMALL[i][custom_id_index] = custom_id_temp.substring(2);
