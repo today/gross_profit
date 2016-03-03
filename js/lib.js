@@ -102,6 +102,22 @@ function select_col_from_array(a_array, col_indexs){
   return dest;
 }
 
+/*
+ 给二维数组加一列   在尾部
+*/
+function add_col_for_table(a_array, default_val){
+  var dest = [];
+  if(default_val === null ){
+    default_val = "";
+  }
+  for(var i=0; i<a_array.length; i++){
+    var temp = a_array[i];
+    temp.push(default_val);
+    dest.push(temp);
+  }
+  return dest;
+}
+
 function trim_array_element( a_array ){
   for( var i=0; i<a_array.length; i++){
     var temp = a_array[i];

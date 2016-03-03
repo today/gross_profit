@@ -875,14 +875,14 @@ var calc_branch_city_220 = function(){
     data[offset+2] += income;
     data[offset+3] += gross;
     if( data[offset+2] != 0 ){
-      data[offset+4] = data[offset+3]/data[offset+2]*100;
+      data[offset+4] = data[offset+3]/data[offset+2];
     }
 
     data[21] += count;
     data[22] += income;
     data[23] += gross;
     if( data[22] != 0 ){
-      data[24] = data[23]/data[22]*100;
+      data[24] = data[23]/data[22];
     }
 
   };
@@ -915,8 +915,32 @@ var calc_branch_city_220 = function(){
   full_data.push(data_array["其他"]    );
   full_data.push(data_array["数据错误"]    );
   //full_data.push(data_array["零售中心"] );
+
+  // 地市渠道汇总
+  var obj_summary = {name: "地市渠道销量收入毛利汇总", data: full_data};
+  console.log(obj_summary);
+
+  // 地市汇总表  
+  var city_summary = select_col_from_array(full_data,[0,21,22,23,24]);
+  city_summary = add_col_for_table(city_summary, "");
+  city_summary[0][5] = "备注";
+  city_summary.splice(0, 0, ["地市汇总表",""]);
+  city_summary.push( ["合计",""]);
+  city_summary.push( ["毛利率",""]);
+  var obj_city = {name: "地市汇总表", data: city_summary};
+  console.log(obj_city);
+
+  // 渠道汇总表 
+  var branch_summary = select_col_from_array(full_data,[0,21,22,23,24]);
+  var obj_branch = {name: "渠道汇总表", data: branch_summary};
+  console.log(obj_branch);
+
+  var sheets = [];
+  sheets.push(obj_summary);
+  sheets.push(obj_city);
+  sheets.push(obj_branch);
   
-  var buffer = xlsx.build([{name: "地市渠道销量收入毛利汇总表", data: full_data}]);
+  var buffer = xlsx.build(sheets);
   fs.writeFileSync(  vm.base_dir + "计算结果_地市渠道销量收入毛利汇总表("+ vm.cost_type +").xlsx", buffer);
   return true;
 };
@@ -931,9 +955,14 @@ var format_230 = function () {
 
   for(var i=0; i<file_list.length; i++){
     var obj_sheet = xlsx.parse( vm.base_dir + file_list[i] + ".xlsx");
-    var data_array =  obj_sheet[0].data;
-    var full_data = format_two_decimal( data_array );
-    var buffer = xlsx.build([{name: file_list[i], data: full_data}]);
+
+    for(var j=0; j<obj_sheet.length; j++ ){
+      var data_array =  obj_sheet[j].data;
+      var full_data = format_two_decimal( data_array );
+      obj_sheet[j].data = full_data;
+    }
+
+    var buffer = xlsx.build(obj_sheet);
     fs.writeFileSync(  vm.base_dir + file_list[i] + ".xlsx", buffer);
   }
 
