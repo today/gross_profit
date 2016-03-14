@@ -118,6 +118,11 @@ function add_col_for_table(a_array, default_val){
   return dest;
 }
 
+var find_title_index = function( title_array, t_name){
+  var a_index = _.indexOf( title_array, t_name );
+  return a_index;
+};
+
 function trim_array_element( a_array ){
   for( var i=0; i<a_array.length; i++){
     var temp = a_array[i];

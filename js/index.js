@@ -65,7 +65,7 @@ var check_src_130 = function(){
       run_flag = false;
     }
   }
-  return run_flag;;
+  return run_flag;
 };
 
 var load_order_detail_140 = function(){
@@ -73,6 +73,8 @@ var load_order_detail_140 = function(){
 
   var obj = null;
   obj = xlsx.parse( vm.base_dir + vm.src_files['销售订单明细'] ); // 读入xlsx文件
+  console.log(vm.src_files['销售订单明细']);
+  console.log(obj);
   // 取出第一个sheet
   ORDER_DETAIL = obj[0].data;
 
@@ -1043,10 +1045,7 @@ var make_title = function( s_title ){
   return obj_title;
 };
 
-var find_title_index = function( title_array, t_name){
-  var a_index = _.indexOf( title_array, t_name );
-  return a_index;
-};
+
 
 var getCity = function(custom_info, custom_id){
 
