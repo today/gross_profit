@@ -103,6 +103,21 @@ function select_col_from_array(a_array, col_indexs){
 }
 
 /*
+ 从二维数组中取出指定的一个列，并做成一维数组返回
+*/
+function select_one_col_from_table(a_array, col_index ){
+  var dest = [];
+  var temp = null;
+  for(var i=0; i<a_array.length; i++){
+    temp = null;
+    temp = a_array[i][col_index];
+    
+    dest.push(temp);
+  }
+  return dest;
+}
+
+/*
  给二维数组加一列   在尾部
 */
 function add_col_for_table(a_array, default_val){
@@ -117,6 +132,26 @@ function add_col_for_table(a_array, default_val){
   }
   return dest;
 }
+
+function make_array( array_length, default_val ){
+  var arr = [];
+  for(var i=0; i<array_length; i++){
+    arr.push(default_val);
+  }
+  return arr;
+};
+
+// 计算数组中数据的和  sum
+function array_sum( arr ){
+  var tmp = 0;
+  for(var i=0; i<arr.length; i++){
+    if( !isNaN(arr[i]) ){
+      tmp += arr[i];
+    }
+  }
+  //console.log("summary: " + tmp);
+  return tmp;
+};
 
 var find_title_index = function( title_array, t_name){
   var a_index = _.indexOf( title_array, t_name );

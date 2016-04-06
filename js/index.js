@@ -27,8 +27,6 @@ var check_env_110 = function(){
   envlist.push("node_modules/node-xlsx/");
   envlist.push("node_modules/underscore/underscore-min.js");
 
-
-
   return true;
 };
 
@@ -788,34 +786,41 @@ var calc_branch_city_220 = function(){
   title_array_dest.push("自有渠道收入");
   title_array_dest.push("自有渠道毛利");  
   title_array_dest.push("自有渠道毛利率");
+  title_array_dest.push("自有渠道收入占比");
 
   title_array_dest.push("分销渠道销量");  
   title_array_dest.push("分销渠道收入");  
   title_array_dest.push("分销渠道毛利"); 
   title_array_dest.push("分销渠道毛利率");
+  title_array_dest.push("分销渠道收入占比");
 
   title_array_dest.push("电子渠道销量");  
   title_array_dest.push("电子渠道收入");  
   title_array_dest.push("电子渠道毛利"); 
   title_array_dest.push("电子渠道毛利率");
+  title_array_dest.push("电子渠道收入占比");
 
   title_array_dest.push("零售渠道销量");  
   title_array_dest.push("零售渠道收入");  
   title_array_dest.push("零售渠道毛利"); 
   title_array_dest.push("零售渠道毛利率");
+  title_array_dest.push("零售渠道收入占比");
 
   title_array_dest.push("未确定渠道销量");  
   title_array_dest.push("未确定渠道收入");  
   title_array_dest.push("未确定渠道毛利"); 
   title_array_dest.push("未确定渠道毛利率");
+  title_array_dest.push("未确定渠道收入占比");
 
   title_array_dest.push("合计销量");  
   title_array_dest.push("合计收入");  
   title_array_dest.push("合计毛利");
   title_array_dest.push("合计毛利率");
+  title_array_dest.push("合计收入占比");
 
   var make_summary_line = function(title){ 
-    var data = ["",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var temp_array = make_array(30, 0);
+    var data = [""].concat(temp_array);
     data[0] = title;
     return data;
   };
@@ -835,6 +840,7 @@ var calc_branch_city_220 = function(){
   data_array["零售中心"] = make_summary_line('零售中心');
   data_array["其他"]    = make_summary_line('其他');
   data_array["数据错误"] = make_summary_line('数据错误');
+  data_array["合计"]    = make_summary_line('合计');
 
   // 加总数量，收入，毛利，毛利率  的函数。
   var calc_summary = function( order, data){
@@ -859,13 +865,13 @@ var calc_branch_city_220 = function(){
     if( "自有渠道" === branch ){
       offset = 0;
     }else if ( "分销渠道" === branch ){
-      offset = 4;
+      offset = 5;
     }else if ( "电子渠道" === branch ){
-      offset = 8;
+      offset = 10;
     }else if ( "零售渠道" === branch ){
-      offset = 12;
+      offset = 15;
     }else if ( "未确定渠道" === branch ){
-      offset = 16;
+      offset = 20;
     }else {
       console.log("渠道归属 为空");
     }
@@ -880,11 +886,11 @@ var calc_branch_city_220 = function(){
       data[offset+4] = data[offset+3]/data[offset+2];
     }
 
-    data[21] += count;
-    data[22] += income;
-    data[23] += gross;
-    if( data[22] != 0 ){
-      data[24] = data[23]/data[22];
+    data[26] += count;
+    data[27] += income;
+    data[28] += gross;
+    if( data[27] != 0 ){
+      data[29] = data[28]/data[27];
     }
 
   };
@@ -916,14 +922,47 @@ var calc_branch_city_220 = function(){
   full_data.push(data_array["零售中心"] );
   full_data.push(data_array["其他"]    );
   full_data.push(data_array["数据错误"]    );
-  //full_data.push(data_array["零售中心"] );
+  full_data.push(data_array["合计"] );
+
+  //  计算列合计
+  var temp_hj = data_array['合计'];
+  for(var i=1; i<temp_hj.length; i++ ){
+    var temp_one_col = select_one_col_from_table(full_data, i);
+    //console.log(temp_one_col);
+    temp_hj[i] = array_sum(temp_one_col);
+  }
+
+  //  计算渠道收入占比。
+  var index_zy = find_title_index(title_array_dest, "自有渠道收入占比");
+  var index_fx = find_title_index(title_array_dest, "分销渠道收入占比");
+  var index_dz = find_title_index(title_array_dest, "电子渠道收入占比");
+  var index_ls = find_title_index(title_array_dest, "零售渠道收入占比");
+  var index_wqd = find_title_index(title_array_dest, "未确定渠道收入占比");
+  var index_hjsr = find_title_index(title_array_dest, "合计收入");
+  for( var i=1; i<full_data.length; i++ ){
+    var temp_data = full_data[i];
+    temp_data[index_zy] = temp_data[index_zy-3] / temp_data[index_hjsr];
+    temp_data[index_fx] = temp_data[index_fx-3] / temp_data[index_hjsr];
+    temp_data[index_dz] = temp_data[index_dz-3] / temp_data[index_hjsr];
+    temp_data[index_ls] = temp_data[index_ls-3] / temp_data[index_hjsr];
+    temp_data[index_wqd] = temp_data[index_wqd-3] / temp_data[index_hjsr];
+  }
+  //  计算 最后一列  地市收入占比。
+  var index_hj = find_title_index(title_array_dest, "合计收入占比");
+  var array_hj = select_one_col_from_table(full_data, index_hj);
+  //console.log(array_hj);
+  for( var i=1; i<array_hj.length-1; i++ ){
+    console.log(full_data[i][index_hj-3]);
+    console.log(full_data[full_data.length-1][index_hjsr]);
+    full_data[i][index_hj] = full_data[i][index_hj-3] / full_data[full_data.length-1][index_hjsr];
+  }
+
 
   // 地市渠道汇总
   var obj_summary = {name: "地市渠道销量收入毛利汇总", data: full_data};
-  console.log(obj_summary);
-
+  //console.log(obj_summary);
   // 地市汇总表  
-  var city_summary = select_col_from_array(full_data,[0,21,22,23,24]);
+  var city_summary = select_col_from_array(full_data,[0,27,28,29,30]);
   city_summary = add_col_for_table(city_summary, "");
   city_summary[0][5] = "备注";
   city_summary.splice(0, 0, ["地市汇总表",""]);
@@ -933,7 +972,7 @@ var calc_branch_city_220 = function(){
   console.log(obj_city);
 
   // 渠道汇总表 
-  var branch_summary = select_col_from_array(full_data,[0,21,22,23,24]);
+  var branch_summary = select_col_from_array(full_data,[0,27,28,29,30]);
   var obj_branch = {name: "渠道汇总表", data: branch_summary};
   console.log(obj_branch);
 
