@@ -999,7 +999,7 @@ var format_230 = function () {
 
     for(var j=0; j<obj_sheet.length; j++ ){
       var data_array =  obj_sheet[j].data;
-      var full_data = format_two_decimal( data_array );
+      var full_data = format_data( data_array );
       obj_sheet[j].data = full_data;
     }
 
@@ -1040,16 +1040,27 @@ var finish_240 = function () {
 }
 
 /***************  分隔线  ******************/
+var format_percent = function(a_num){
+  return ( a_num * 100 ).toFixed(2) + "%";
+}
 
-var format_two_decimal = function(table_array){
+var format_two_decimal = function(a_num){
+  return a_num.toFixed(2);
+}
+
+var format_data = function(table_array){
   for(var i=0;i<table_array.length; i++){
     var temp_array = table_array[i];
     //console.log(temp_array);
     for(var j=0;j<temp_array.length; j++){
       var temp_cell = temp_array[j];
       if( typeof(temp_cell) === typeof(3) ){   // 如果是数字
-        if( (! Number.isInteger(temp_cell) ) && (! Number.isNaN(temp_cell) ) ){   // 如果不是整数 并且不是NaN
-          temp_array[j] = temp_cell.toFixed(2);
+        if( 1 > temp_cell && -1 < temp_cell ) {  // 如果小于1，就处理成百分比格式
+          temp_array[j] = format_percent( temp_cell );
+        }
+        // 如果不是整数 并且是NaN，也就是数字
+        else if( (! Number.isInteger(temp_cell) ) && (! Number.isNaN(temp_cell) ) ){   
+          temp_array[j] = format_two_decimal( temp_cell );
         }
       }
     }
