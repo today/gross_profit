@@ -1119,7 +1119,17 @@ var getCity = function(custom_info, custom_id){
   for(var i=1; i<custom_info.length; i++){
     var custom = custom_info[i];
     no2 = custom[custom_no_index];
-    var city = custom[city_index].trim();
+    
+    var city = custom[city_index];
+    if( city ){
+      city = custom[city_index].trim();
+    }else{
+      console.log(custom[custom_no_index]);
+      console.log(custom[city_index]);
+      ERR_MSG.put("取客户地市出错。 序号: #"+ i + "#   地市 : #" + city + "#" );
+      continue;
+      // 
+    } 
 
     if( typeof(no2) === typeof(123) ){
       no2 = no2;
@@ -1172,6 +1182,7 @@ var getCity = function(custom_info, custom_id){
 
   if( ret_city == null ){
     console.log("未能找到对应的客户。 客户编码: #" + no + "# #" + ret_city + "#");
+    ERR_MSG.put("未能找到对应的客户。 客户编码: #" + no + "# #" + ret_city + "#" );
     //console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
   }
 
