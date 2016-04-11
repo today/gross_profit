@@ -155,6 +155,10 @@ function array_sum( arr ){
 
 var find_title_index = function( title_array, t_name){
   var a_index = _.indexOf( title_array, t_name );
+  if( -1 === a_index ){ 
+    console.log("Not found title index. title=" + t_name );
+    console.log("title_array=" + title_array ); 
+  }
   return a_index;
 };
 
