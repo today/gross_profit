@@ -66,7 +66,7 @@ var check_src_130 = function(){
   return run_flag;
 };
 
-var load_order_detail_140 = function(){
+var check_title_140 = function(){
   var flag = true;
   var flag_temp = true;
 
@@ -147,7 +147,7 @@ var load_order_detail_140 = function(){
   flag = flag && flag_temp;
   //MSG.put( "销售订单明细   数据读入成功。");
 
-  return flag;;
+  return flag;
 };
 
 
@@ -180,14 +180,17 @@ var copy_order_detail_150 = function(){
   must_col_title.push(make_title("销售收入"));
   must_col_title.push(make_title("毛利"));
   must_col_title.push(make_title("毛利率"));
+  must_col_title.push(make_title("渠道经理"));
+  must_col_title.push(make_title("产品经理"));
 
-  
   var title_array = ORDER_DETAIL[0];
   // 把附加字段添加到 title 行中。
   title_array.push("内控成本价格");
   title_array.push("销售收入");
   title_array.push("毛利");
   title_array.push("毛利率");
+  title_array.push("渠道经理");
+  title_array.push("产品经理");
 
   // 根据title，查询出 index。
   for(var i=0; i<title_array.length; i++ ){
@@ -259,7 +262,7 @@ var copy_order_detail_150 = function(){
 };
 
 // 第六步：补充数据到工作文件。
-// 成本价格取数的时候  应该使用“内控成本价格” 
+// 成本价格取数的时候  应该使用   “内控成本价格”   或者   “预期成本价格”
 var fill_field_160 = function(){
 
   // 获得物料数据。
@@ -279,6 +282,7 @@ var fill_field_160 = function(){
   var index_prod_id = find_title_index(title_array_3, "物料编码");
   var index_order_date = find_title_index(title_array_3, "创建日期");
   var index_cost = find_title_index(title_array_3, "内控成本价格");
+  var index_prod_manager = find_title_index(title_array_3, "产品经理");
 
   // 因为要跳过title，所以下标从 1 开始。
   for(var i=1; i<order_info.length; i++){
@@ -292,6 +296,7 @@ var fill_field_160 = function(){
 
     // 查「物料清单」表，取得成本价格
     var cost = getCost(prod_info, prod_id_in_order, date_in_order);
+    var manager = getProdManager(prod_info, prod_id_in_order);
     
     if( undefined === cost ){
       ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
@@ -312,6 +317,9 @@ var fill_field_160 = function(){
     else{
       // 成本 填入表格中。
       a_order[index_cost] = cost;
+      // 产品经理
+      a_order[index_prod_manager] = manager;
+      
       //console.log(cost);
     }
   }
@@ -435,8 +443,8 @@ var calc_prod_180 = function(){
   index_will_delete.push( find_title_index(title_array, "交货完成状态") );
   index_will_delete.push( find_title_index(title_array, "实际交货日期") );
   index_will_delete.push( find_title_index(title_array, "渠道") );
-  index_will_delete.push( find_title_index(title_array, "客户") );
-  index_will_delete.push( find_title_index(title_array, "客户名称") );
+  //index_will_delete.push( find_title_index(title_array, "客户") );
+  //index_will_delete.push( find_title_index(title_array, "客户名称") );
   index_will_delete.push( find_title_index(title_array, "城市") );
   index_will_delete.push( find_title_index(title_array, "客户参考号") );
   index_will_delete.push( find_title_index(title_array, "创建日期") );
@@ -545,6 +553,7 @@ var getProd_info = function(){
   index_must.push( find_title_index(title_array, "预期成本价格") );
   index_must.push( find_title_index(title_array, "内控成本价格") );
   index_must.push( find_title_index(title_array, "开始变动日期") );
+  index_must.push( find_title_index(title_array, "产品经理") );
   console.log(index_must);
 
   // 填充一个默认值到 「开始变动日期」  字段里
@@ -568,6 +577,7 @@ var getProd_info = function(){
   index_must_2.push( find_title_index(title_array_2, "预期成本价格") );
   index_must_2.push( find_title_index(title_array_2, "内控成本价格") );
   index_must_2.push( find_title_index(title_array_2, "开始变动日期") );
+  index_must_2.push( find_title_index(title_array_2, "产品经理") );
   console.log(index_must_2);
   var cost_history_col = select_col_from_array(price_history, index_must_2);
 
@@ -700,7 +710,15 @@ var fill_city_210 = function(){
   console.log(title_array);
   var index_custom_id = find_title_index(title_array, "客户");
   var index_city = find_title_index(title_array, "地市归属");
-  
+  var index_branch_manager = find_title_index(title_array, "渠道经理");
+  var array_index = [];
+  array_index.push(index_custom_id);
+  array_index.push(index_city);
+  array_index.push(index_city);
+  if( false === check_index(array_index)){
+    console.log(array_index);
+    return false;
+  }
 
   var obj_sheet2 = xlsx.parse( vm.base_dir + vm.src_files['SCM客户明细']);
   var custom_info =  obj_sheet2[0].data;
@@ -709,21 +727,18 @@ var fill_city_210 = function(){
   for(var i=1; i<gross_info.length; i++ ){
     var order = gross_info[i];
     var city = getCity(custom_info, order[index_custom_id]);
-    //console.log(city);
+    var branch_manager = getBranch_Manager(custom_info, order[index_custom_id]);
+    //console.log(branch_manager);
     order[index_city] = city;
+    order[index_branch_manager] = branch_manager;
+    //if( i>100){ return false;}
   }
 
   // P001  西安城区铺货仓
-  // P002  咸阳铺货仓
-  // P003  宝鸡铺货仓
-  // P004  渭南铺货仓
-  // P005  铜川铺货仓
-  // P006  延安铺货仓
-  // P007  榆林铺货仓
-  // P008  汉中铺货仓
-  // P009  安康铺货仓
-  // P010  商洛铺货仓
-  // P011  西安郊县铺货仓
+  // P002  咸阳铺货仓  // P003  宝鸡铺货仓  // P004  渭南铺货仓
+  // P005  铜川铺货仓  // P006  延安铺货仓  // P007  榆林铺货仓
+  // P008  汉中铺货仓  // P009  安康铺货仓
+  // P010  商洛铺货仓  // P011  西安郊县铺货仓
   var get_self_branch_city = function( branch ){
     var city = "出错";
     if( "" === branch ) city = "";
@@ -746,7 +761,6 @@ var fill_city_210 = function(){
 
     return city;
   };
-
 
   // 单独处理 自有渠道 的 地市归属
   var index_warehouse_id = find_title_index(title_array, "库存地点");
@@ -1109,7 +1123,55 @@ var make_title = function( s_title ){
   return obj_title;
 };
 
+var getBranch_Manager = function(custom_info, custom_id){
+  //console.log("getBranch_Manager");
+  var title_array = custom_info[0];
+  //console.log("title_array=" + title_array );
+  var index_custom_no = find_title_index(title_array, "客户");
+  var index_manager = find_title_index(title_array, "渠道经理");
+  var ret_manager = "noCustomer";
 
+  var no = "xxx";
+  var no2 = "yyy";
+
+  if( typeof(custom_id) === typeof(123) ){
+    no = custom_id;
+  }else{
+    no = parseInt( custom_id );
+  }
+  //console.log("no=" + no );
+
+  for(var i=1; i<custom_info.length; i++){
+    var custom = custom_info[i];
+    no2 = custom[index_custom_no];
+
+    if( typeof(no2) === typeof(123) ){
+      no2 = no2;
+    }else{
+      no2 = parseInt(no2);
+    }
+
+    if( no === no2 ){
+      var manager = custom[index_manager];
+      if( manager ){
+        manager = manager.trim();
+        ret_manager = manager;
+        break;
+      }else{
+        //ERR_MSG.put("取渠道经理出错。 custom_id : #" + custom_id + "#" );
+        //console.log("取渠道经理出错。 custom_id : #" + custom_id + "#" );
+        ret_manager = "无渠道经理";
+      }
+    }
+  }
+  //console.log("ret_manager=" + ret_manager );
+  // if( ret_manager == null ){
+  //   console.log("未能找到对应的渠道经理。 客户编码: #" + no + "# #" + ret_city + "#");
+  //   ERR_MSG.put("未能找到对应的渠道经理。 客户编码: #" + no + "# #" + ret_city + "#" );
+  //   //console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
+  // }
+  return ret_manager;
+}
 
 var getCity = function(custom_info, custom_id){
 
@@ -1203,6 +1265,37 @@ var getCity = function(custom_info, custom_id){
   return ret_city;
 }
 
+var getProdManager = function(prod_info, id){
+  //console.log(id);
+  var manager = "";
+  var prod_id = null;
+  var id_a = id.trim();
+
+  var title_array = prod_info[0];
+  index_id = find_title_index(title_array, "物料编码");
+  index_manager = find_title_index(title_array, "产品经理" );
+  
+  for(var i=1; i<prod_info.length; i++){
+    prod_id = prod_info[i][index_id];
+    // 把数字转为字符串
+    if( prod_id == null ){
+      console.log("prod_id=" + prod_id );
+      continue;
+    }
+    else if(_.isNumber(prod_id)){   
+      prod_id = ""+prod_id;
+    }
+
+    var id_b = prod_id.trim(); 
+
+    if( id_a === id_b ){
+      manager = prod_info[i][index_manager];
+      break;
+    }
+  }
+  return manager;
+};
+
 var getCost = function(prod_info, id, order_date){
   //console.log(id);
   var temp_array = [];
@@ -1292,19 +1385,30 @@ var getCost = function(prod_info, id, order_date){
 
 
 var check_must_title = function(target, keywords ){
-  var ret_flag = false;
+  var ret_flag = true;
   for(var i=0; i<keywords.length; i++ ){
     var kw = keywords[i];
     console.log(kw);
     if( -1 === _.indexOf(target, kw)){
       // 显示出错提示。
       ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据的第一行。" );
-      ret_flag = true;
+      ret_flag = false;
     }
   }
+  console.log("ret_flag=" + ret_flag);
   return ret_flag;
 }
 
+var check_index = function(arr){
+  var ret = true;
+  for(var i=0;i<arr.length; i++){
+    if( -1 === arr[i] ){
+      ERR_MSG.put("数据出错：。无法找到指定的 标题 列，请检查数据的第一行。" );
+      ret = false;
+    }
+  }
+  return ret;
+}
 
 
 
