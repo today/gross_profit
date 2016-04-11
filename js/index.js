@@ -68,6 +68,7 @@ var check_src_130 = function(){
 
 var load_order_detail_140 = function(){
   var flag = true;
+  var flag_temp = true;
 
   var obj = null;
   obj = xlsx.parse( vm.base_dir + vm.src_files['销售订单明细'] ); // 读入xlsx文件
@@ -101,7 +102,8 @@ var load_order_detail_140 = function(){
   must_title.push("客户参考号");
   must_title.push("创建日期");
   MSG.put( "开始检查「销售订单明细」文件的标题栏。");
-  flag = flag && check_must_title(row_1, must_title);
+  flag_temp = check_must_title(row_1, must_title);
+  flag = flag && flag_temp;
 
   obj = xlsx.parse( vm.base_dir + vm.src_files['物料清单'] );
   // 取出第一个sheet
@@ -111,9 +113,12 @@ var load_order_detail_140 = function(){
   must_title.push("物料编码");
   must_title.push("预期成本价格");
   must_title.push("内控成本价格");
-  must_title.push("开始变动日期");
+  //must_title.push("开始变动日期");
+  must_title.push("产品经理");
+
   MSG.put( "开始检查「物料清单」文件的标题栏。");
-  flag = flag && check_must_title(row_1, must_title);
+  flag_temp = check_must_title(row_1, must_title);
+  flag = flag && flag_temp;
 
   obj = xlsx.parse( vm.base_dir + vm.src_files['SCM客户明细'] );
   // 取出第一个sheet
@@ -122,8 +127,11 @@ var load_order_detail_140 = function(){
   var must_title = [];
   must_title.push("客户");
   must_title.push("地市");
+  must_title.push("渠道经理");
+
   MSG.put( "开始检查「SCM客户明细」文件的标题栏。");
-  flag = flag && check_must_title(row_1, must_title);
+  flag_temp = check_must_title(row_1, must_title);
+  flag = flag && flag_temp;
 
   obj = xlsx.parse( vm.base_dir + vm.src_files['内控成本价格变动'] );
   // 取出第一个sheet
@@ -135,11 +143,11 @@ var load_order_detail_140 = function(){
   must_title.push("内控成本价格");
   must_title.push("开始变动日期");
   MSG.put( "开始检查「内控成本价格变动」文件的标题栏。");
-  flag = flag && check_must_title(row_1, must_title);
-
+  flag_temp = check_must_title(row_1, must_title);
+  flag = flag && flag_temp;
   //MSG.put( "销售订单明细   数据读入成功。");
 
-  return true;;
+  return flag;;
 };
 
 
@@ -986,7 +994,13 @@ var calc_branch_city_220 = function(){
   return true;
 };
 
-var format_230 = function () {
+// 第十二步：计算渠道经理，产品经理，客户 毛利贡献。
+var gross_contribute_230 = function () {
+
+  return true;
+}
+
+var format_240 = function () {
   // 处理最终结果，把数字格式化成两位小数
   var file_list = [];
   file_list.push("计算结果_销售毛利("+ vm.cost_type +")");
@@ -1010,7 +1024,7 @@ var format_230 = function () {
   return true;
 }
 
-var finish_240 = function () {
+var finish_250 = function () {
   // 打开计算结果的文件夹
   var os = require('os');
   var os_name = os.platform();
@@ -1278,13 +1292,17 @@ var getCost = function(prod_info, id, order_date){
 
 
 var check_must_title = function(target, keywords ){
+  var ret_flag = false;
   for(var i=0; i<keywords.length; i++ ){
     var kw = keywords[i];
+    console.log(kw);
     if( -1 === _.indexOf(target, kw)){
       // 显示出错提示。
       ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据的第一行。" );
+      ret_flag = true;
     }
   }
+  return ret_flag;
 }
 
 
