@@ -295,8 +295,9 @@ var fill_field_160 = function(){
     //console.log(date_in_order);
 
     // 查「物料清单」表，取得成本价格
-    var cost = getCost(prod_info, prod_id_in_order, date_in_order);
-    var manager = getProdManager(prod_info, prod_id_in_order);
+    var tempObj = getCost_and_manager(prod_info, prod_id_in_order, date_in_order);
+    var cost = tempObj.cost;
+    var manager = tempObj.prod_manager;
     
     if( undefined === cost ){
       ERR_MSG.put("数据出错：物料表中的成本价格未填写。行数：\t" + (i+1) + "\t物料编码：\t" + prod_id_in_order );
@@ -726,8 +727,9 @@ var fill_city_210 = function(){
 
   for(var i=1; i<gross_info.length; i++ ){
     var order = gross_info[i];
-    var city = getCity(custom_info, order[index_custom_id]);
-    var branch_manager = getBranch_Manager(custom_info, order[index_custom_id]);
+    var temp_obj = getCity_and_manager(custom_info, order[index_custom_id]);
+    var city = temp_obj.city;
+    var branch_manager = temp_obj.manager;
     //console.log(branch_manager);
     order[index_city] = city;
     order[index_branch_manager] = branch_manager;
@@ -1123,65 +1125,18 @@ var make_title = function( s_title ){
   return obj_title;
 };
 
-var getBranch_Manager = function(custom_info, custom_id){
-  //console.log("getBranch_Manager");
-  var title_array = custom_info[0];
-  //console.log("title_array=" + title_array );
-  var index_custom_no = find_title_index(title_array, "客户");
-  var index_manager = find_title_index(title_array, "渠道经理");
-  var ret_manager = "noCustomer";
-
-  var no = "xxx";
-  var no2 = "yyy";
-
-  if( typeof(custom_id) === typeof(123) ){
-    no = custom_id;
-  }else{
-    no = parseInt( custom_id );
-  }
-  //console.log("no=" + no );
-
-  for(var i=1; i<custom_info.length; i++){
-    var custom = custom_info[i];
-    no2 = custom[index_custom_no];
-
-    if( typeof(no2) === typeof(123) ){
-      no2 = no2;
-    }else{
-      no2 = parseInt(no2);
-    }
-
-    if( no === no2 ){
-      var manager = custom[index_manager];
-      if( manager ){
-        manager = manager.trim();
-        ret_manager = manager;
-        break;
-      }else{
-        //ERR_MSG.put("取渠道经理出错。 custom_id : #" + custom_id + "#" );
-        //console.log("取渠道经理出错。 custom_id : #" + custom_id + "#" );
-        ret_manager = "无渠道经理";
-      }
-    }
-  }
-  //console.log("ret_manager=" + ret_manager );
-  // if( ret_manager == null ){
-  //   console.log("未能找到对应的渠道经理。 客户编码: #" + no + "# #" + ret_city + "#");
-  //   ERR_MSG.put("未能找到对应的渠道经理。 客户编码: #" + no + "# #" + ret_city + "#" );
-  //   //console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
-  // }
-  return ret_manager;
-}
-
-var getCity = function(custom_info, custom_id){
+var getCity_and_manager = function(custom_info, custom_id){
 
   var title_array = custom_info[0];
   //console.log(title_array);
-  custom_no_index = find_title_index(title_array, "客户");
-  city_index = find_title_index(title_array, "地市");
+  var custom_no_index = find_title_index(title_array, "客户");
+  var city_index = find_title_index(title_array, "地市");
+  var index_manager = find_title_index(title_array, "渠道经理");
+
   //console.log(custom_no_index);
   //console.log(city_index);
   var ret_city = null;
+  var ret_manager = null;
 
   var no = "xxx";
   var no2 = "yyy";
@@ -1200,8 +1155,8 @@ var getCity = function(custom_info, custom_id){
     if( city ){
       city = custom[city_index].trim();
     }else{
-      console.log(custom[custom_no_index]);
-      console.log(custom[city_index]);
+      //console.log(custom[custom_no_index]);
+      //console.log(custom[city_index]);
       ERR_MSG.put("取客户地市出错。 序号: #"+ i + "#   地市 : #" + city + "#" );
       continue;
       // 
@@ -1252,6 +1207,18 @@ var getCity = function(custom_info, custom_id){
         ERR_MSG.put("客户地区归属出错。 地区 : #" + no + "#" );
         console.log("客户的地区归属出错。 #" + no + "# #" + no2 + "# #" + city + "#");
       }
+
+      var manager = custom[index_manager];
+      if( manager ){
+        manager = manager.trim();
+        ret_manager = manager;
+        break;
+      }else{
+        //ERR_MSG.put("取渠道经理出错。 custom_id : #" + custom_id + "#" );
+        //console.log("取渠道经理出错。 custom_id : #" + custom_id + "#" );
+        ret_manager = "无渠道经理";
+      }
+
       break;
     }
   }
@@ -1262,49 +1229,25 @@ var getCity = function(custom_info, custom_id){
     //console.log("#" + typeof(no) + "# #" + typeof(no2) + "#");
   }
 
-  return ret_city;
-}
-
-var getProdManager = function(prod_info, id){
-  //console.log(id);
-  var manager = "无产品经理";
-  var prod_id = null;
-  var id_a = id.trim();
-
-  var title_array = prod_info[0];
-  index_id = find_title_index(title_array, "物料编码");
-  index_manager = find_title_index(title_array, "产品经理" );
-  
-  for(var i=1; i<prod_info.length; i++){
-    prod_id = prod_info[i][index_id];
-    // 把数字转为字符串
-    if( prod_id == null ){
-      console.log("prod_id=" + prod_id );
-      continue;
-    }
-    else if(_.isNumber(prod_id)){   
-      prod_id = ""+prod_id;
-    }
-
-    var id_b = prod_id.trim(); 
-
-    if( id_a === id_b ){
-      manager = prod_info[i][index_manager];
-      break;
-    }
-  }
-  return manager;
+  var temp_obj = {};
+  temp_obj.city = ret_city;
+  temp_obj.manager = ret_manager;
+  return temp_obj;
 };
 
-var getCost = function(prod_info, id, order_date){
+var getCost_and_manager = function(prod_info, id, order_date){
   //console.log(id);
   var temp_array = [];
   var temp_index = -1;   // 貌似这个变量没有用到。
   var prod_id = null;
   var id_a = id.trim();
 
+  var cost = -3;
+  var prod_manager = "无产品经理";
+
   var title_array = prod_info[0];
-  id_index = find_title_index(title_array, "物料编码");
+  var id_index = find_title_index(title_array, "物料编码");
+  var index_manager = find_title_index(title_array, "产品经理" );
   //cost_index = find_title_index(title_array, "预期成本价格");
   //cost_index = find_title_index(title_array, "内控成本价格");
   cost_index = find_title_index(title_array, vm.cost_type );
@@ -1331,17 +1274,13 @@ var getCost = function(prod_info, id, order_date){
 
   // 看看哪个价钱是当前的价钱
   var cost = -3;
+  var prod_manager = "无产品经理";
   if( temp_array.length === 0 ){
     console.log("Warning: cost not found. prod_id=" +　id_a　);
     cost = -2;
   }
   else if( temp_array.length === 1 ){
     cost = temp_array[0][cost_index];
-    // if( undefined === cost ) {
-    //   console.log("11111111111");
-    //   console.log(temp_array);
-    //   console.log(cost_index);
-    // }
   }
   else{
     // 先排序。
@@ -1357,30 +1296,23 @@ var getCost = function(prod_info, id, order_date){
       // 
       if( order_date >= c1[date_index] && order_date < c2[date_index] ){
         cost = c1[cost_index];
-        // if( undefined === cost ){
-        //   console.log("222222222222");
-        //   console.log(c1);
-        //   console.log(cost_index);
-        // }
-        // console.log("------------");
-        // console.log(c1[date_index]);
-        // console.log(order_date);
-        // console.log(c2[date_index]);
-        // console.log("------------");
+        prod_manager = c1[index_manager];
+        
         break;
       }
       else if( i === (temp_array.length-1) && order_date >= c2[date_index]){
         cost = c2[cost_index];
-        if( undefined === cost ) console.log("cost is undefined");
-        // console.log("------------");
-        // console.log(order_date);
-        // console.log(c2[date_index]);
-        // console.log("------------");
+        prod_manager = c2[index_manager];
+        if( undefined === cost ){
+          console.log("cost is undefined");
+        } 
       }
     }
   }
-
-  return cost;
+  var tempObj = {};
+  tempObj.cost = cost;
+  tempObj.prod_manager = prod_manager;
+  return tempObj;
 };
 
 
@@ -1388,14 +1320,13 @@ var check_must_title = function(target, keywords ){
   var ret_flag = true;
   for(var i=0; i<keywords.length; i++ ){
     var kw = keywords[i];
-    console.log(kw);
+    //console.log(kw);
     if( -1 === _.indexOf(target, kw)){
       // 显示出错提示。
       ERR_MSG.put("数据出错：。无法找到「"+ kw +"」列，请检查数据的第一行。" );
       ret_flag = false;
     }
   }
-  console.log("ret_flag=" + ret_flag);
   return ret_flag;
 }
 
@@ -1409,6 +1340,14 @@ var check_index = function(arr){
   }
   return ret;
 }
+
+
+
+
+
+
+
+
 
 
 
