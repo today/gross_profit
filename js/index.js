@@ -1267,7 +1267,7 @@ var getCity = function(custom_info, custom_id){
 
 var getProdManager = function(prod_info, id){
   //console.log(id);
-  var manager = "";
+  var manager = "无产品经理";
   var prod_id = null;
   var id_a = id.trim();
 
