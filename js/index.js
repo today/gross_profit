@@ -1012,6 +1012,105 @@ var calc_branch_city_220 = function(){
 
 // 第十二步：计算渠道经理，产品经理，客户 毛利贡献。
 var gross_contribute_230 = function () {
+  var obj_sheet = xlsx.parse( vm.base_dir + "中间文件_销售数据(渠道归属和地市归属).xlsx");
+  var gross_info =  obj_sheet[0].data;
+  MSG.put( " 中间文件_销售数据(渠道归属和地市归属).xlsx  数据读入成功。");
+
+  // 获取源数据中 title 的位置
+  var title_array = gross_info[0];
+  var index_customer_id = find_title_index(title_array, "客户");
+  var index_customer_name = find_title_index(title_array, "客户名称");
+  var index_count = find_title_index(title_array, "实际交货数量");
+  var index_income = find_title_index(title_array, "销售收入");
+  var index_gross = find_title_index(title_array, "毛利");
+  var index_city = find_title_index(title_array, "地市归属");
+  var index_branch_manager = find_title_index(title_array, "渠道经理");
+  var index_prod_manager = find_title_index(title_array, "产品经理");
+  
+  // 生成目标数据的 title
+  var title_array_dest = [];
+  title_array_dest.push("客户");
+  title_array_dest.push("客户名称");
+  title_array_dest.push("销量");
+  title_array_dest.push("收入");
+  title_array_dest.push("利润");
+  title_array_dest.push("单机利润贡献");
+  title_array_dest.push("平均单价");
+  title_array_dest.push("利润率");
+  title_array_dest.push("归属地市");
+  // 查找索引
+  var index_d_customer_id = find_title_index(title_array_dest, "客户");
+  var index_d_customer_name = find_title_index(title_array_dest, "客户名称");
+  var index_d_count = find_title_index(title_array_dest, "销量");
+  var index_d_income = find_title_index(title_array_dest, "收入");
+  var index_d_gross = find_title_index(title_array_dest, "利润");
+  var index_d_avg_gross = find_title_index(title_array_dest, "单机利润贡献");
+  var index_d_avg_price = find_title_index(title_array_dest, "平均单价");
+  var index_d_rate = find_title_index(title_array_dest, "利润率");
+  var index_d_city = find_title_index(title_array_dest, "归属地市");
+
+  // 这将是一个命名数组，也就是类似java中的hashArray，或者Py中的dict
+  var gross_sum = [];
+  // 加总毛利
+  for(var i=1; i<gross_info.length; i++){
+    var a_order = gross_info[i];
+
+    var customer_id = a_order[index_customer_id];
+    var count = a_order[index_count];
+    var income = a_order[index_income];
+    var gross = a_order[index_gross];
+    
+    if( gross_sum[customer_id] ){
+      // 单品汇总信息已经存在
+      var temp_a = gross_sum[customer_id];
+      // 累加数量
+      temp_a[index_d_count] += count;
+      // 累加收入
+      temp_a[index_d_income] += income;
+      // 累加毛利
+      temp_a[index_d_gross] += gross;
+      // console.log(temp_a);
+    }
+    else{
+      // 单品汇总信息 尚未存在
+      var temp_b = make_array( title_array_dest.length, "");
+      temp_b[index_d_customer_id ] = customer_id;
+      temp_b[index_d_customer_name ] = a_order[index_customer_name];
+      temp_b[index_d_count ] = count;
+      temp_b[index_d_income ] = income;
+      temp_b[index_d_gross ] = gross;
+      //temp_b[index_d_avg_gross] = a_order[index_];   // 这三项后面再计算
+      //temp_b[index_d_avg_price] = a_order[index_];
+      //temp_b[index_d_rate ] = a_order[];
+      temp_b[index_d_city ] = a_order[index_city];
+
+      gross_sum[customer_id] = temp_b;
+    }
+  }
+  //console.log(gross_sum['']);
+
+  var prod_gross = [];
+  // 填充标题栏
+  prod_gross.push(title_array_dest);
+  // 填充数据
+  for(var key in gross_sum){
+      prod_gross.push(gross_sum[key]);
+  }
+
+  // 计算 平均价格  平均利润  利润率
+  for(var i=1; i<prod_gross.length; i++){
+    var item = prod_gross[i];
+    if( 0 != item[index_d_count] ){
+      item[index_d_avg_gross] = item[index_d_gross] / item[index_d_count];
+      item[index_d_avg_price] = item[index_d_income] / item[index_d_count];
+    }
+    if( 0 != item[index_d_income] ){
+      item[index_d_rate] = item[index_d_gross] / item[index_d_income];;
+    }
+  }
+
+  var buffer = xlsx.build([{name: "客户毛利贡献", data: prod_gross}]);
+  fs.writeFileSync(  vm.base_dir + "计算结果_毛利贡献("+ vm.cost_type +").xlsx", buffer);
 
   return true;
 }
@@ -1023,6 +1122,7 @@ var format_240 = function () {
   file_list.push("计算结果_物料毛利("+ vm.cost_type +")");
   file_list.push("计算结果_物料组毛利("+ vm.cost_type +")");
   file_list.push("计算结果_地市渠道销量收入毛利汇总表("+ vm.cost_type +")");
+  file_list.push("计算结果_毛利贡献("+ vm.cost_type +")");
 
   for(var i=0; i<file_list.length; i++){
     var obj_sheet = xlsx.parse( vm.base_dir + file_list[i] + ".xlsx");
