@@ -976,8 +976,8 @@ var calc_branch_city_220 = function(){
   var array_hj = select_one_col_from_table(full_data, index_hj);
   //console.log(array_hj);
   for( var i=1; i<array_hj.length-1; i++ ){
-    console.log(full_data[i][index_hj-3]);
-    console.log(full_data[full_data.length-1][index_hjsr]);
+    //console.log(full_data[i][index_hj-3]);
+    //console.log(full_data[full_data.length-1][index_hjsr]);
     full_data[i][index_hj] = full_data[i][index_hj-3] / full_data[full_data.length-1][index_hjsr];
   }
 
@@ -993,12 +993,12 @@ var calc_branch_city_220 = function(){
   city_summary.push( ["合计",""]);
   city_summary.push( ["毛利率",""]);
   var obj_city = {name: "地市汇总表", data: city_summary};
-  console.log(obj_city);
+  //console.log(obj_city);
 
   // 渠道汇总表 
   var branch_summary = select_col_from_array(full_data,[0,27,28,29,30]);
   var obj_branch = {name: "渠道汇总表", data: branch_summary};
-  console.log(obj_branch);
+  //console.log(obj_branch);
 
   var sheets = [];
   sheets.push(obj_summary);
@@ -1100,11 +1100,8 @@ var format_data = function(table_array){
     for(var j=0;j<temp_array.length; j++){
       var temp_cell = temp_array[j];
       if( typeof(temp_cell) === typeof(3) ){   // 如果是数字
-        if( 1 > temp_cell && -1 < temp_cell ) {  // 如果小于1，就处理成百分比格式
-          temp_array[j] = format_percent( temp_cell );
-        }
         // 如果不是整数 并且是NaN，也就是数字
-        else if( (! Number.isInteger(temp_cell) ) && (! Number.isNaN(temp_cell) ) ){   
+        if( (! Number.isInteger(temp_cell) ) && (! Number.isNaN(temp_cell) ) ){   
           temp_array[j] = format_two_decimal( temp_cell );
         }
       }
