@@ -64,15 +64,12 @@
   </div>
   </div>
 
-  <div id="debug_area" style="display:none;"><h3>Debug Area</h3>
+  <div id="debug_area" style="display:none1;">
     step:<input  type="number" v-model="step"  name="text_1" />
     {{step}}
     <br><br>
-    <button  @click="setStep(220)" > 220 </button> 
-    <button  @click="setStep(180)" > 180 </button><br/>
-    
-    <br/>
-    <br>
+    <button  @click="setStep(230)" > 230 </button> 
+    <button  @click="addStep(10)" > +10 </button><br/>
   </div>
 
 
@@ -118,7 +115,8 @@ var vm = new Vue({
         }, 200);
       }
     },
-    setStep: function(i_step){vm.step=i_step;}
+    setStep: function(i_step){vm.step=i_step;},
+    addStep: function(i_add){vm.step += i_add;}
   }
 });
 
